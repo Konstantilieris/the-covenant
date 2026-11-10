@@ -42,14 +42,14 @@ year.
 | Seat | Who | Duty |
 | --- | --- | --- |
 | **Gandalf** | you | signs the plan; speaks from either room and is answered first; the last word |
-| **Théoden** | Claude Code | states the goal; sets down his own position before the counsel speaks; verifies every claim in the code; does the work |
+| **Théoden** | Claude Code | asks Gandalf for the goal when none was given, proposing candidates rather than assuming one; sets down his own position before the counsel speaks; verifies every claim in the code; does the work |
 | **Gríma** | your ChatGPT, in a project with the context pack | answers the question cold, then argues from evidence; one recommendation; a stance on every reply; never trusted on charm |
 | **Háma** | a small agent with no stake, the Doorward | reads each exchange against the goal; on-course, nudge, pause or close; a pause is a barred door |
 
 ## How a review runs (the order of a council)
 
 ```
-GOAL        Théoden states the decision to reach and what counts as done
+GOAL        Gandalf's goal, or Théoden's proposals for Gandalf to choose from; never an assumption
 BLIND TAKE  Gríma gets the question alone; the king's own position is already on record
 POSITION    the king's position goes over; Gríma says where it differs and why
 ARGUMENT    evidence or ask; accept with a change of position, reject with path:line
