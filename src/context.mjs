@@ -1,5 +1,5 @@
 // The goal context: the sections of the pack and the lines of the named files that
-// matter for THIS thread's goal, within a budget. The Navigator then reads the
+// matter for THIS thread's goal, within a budget. Gríma then reads the
 // right 12 KB instead of searching the whole pack. Sent as the first message's
 // attachment (`covenant context --clip`).
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -40,7 +40,7 @@ export function buildGoalContext(dir, meta, { budget = 12000, perSection = 2500,
   }
   all.sort((a, b) => b.score - a.score);
 
-  const out = [`# Goal context — ${meta.title}`, '', `Chosen by the Chief for this goal: ${meta.goal || meta.question}`, ''];
+  const out = [`# Goal context — ${meta.title}`, '', `Chosen by Théoden for this goal: ${meta.goal || meta.question}`, ''];
   let used = out.join('\n').length;
   const files = [];
   for (const rel of meta.contextPaths || []) {

@@ -4,12 +4,12 @@
 
 First release. The log opens.
 
-**Works, and is covered by `npm test`:** the thread bookkeeping end to end — goal,
-blind first take, the Chief's position recorded before the Navigator's reply, stance
-parsing, the brake (no send until the Watch has reviewed the latest reply; a pause
-refuses sends and Chief messages until the Captain resumes), the Captain's record,
+**Works, and is covered by `npm test`:** the council bookkeeping end to end — goal,
+blind first take, Théoden's position recorded before Gríma's reply, stance
+parsing, the brake (no send until Háma has reviewed the latest reply; a pause
+refuses sends and Théoden messages until Gandalf resumes), Gandalf's record,
 close by either side or the cap, the ledger line, the commit on the current branch.
-The one-command install (`covenant-setup`): marker, data dir, launcher, skills, Watch
+The one-command install (`covenant-setup`): marker, data dir, launcher, skills, Háma
 agent, allow rules, Stop hook, pack, doctor, commit.
 
 **Works, exercised by hand on a live account:** the extension lane's page driver on
@@ -19,7 +19,7 @@ sources by paste), the ChatGPT project creation and instructions, and the codex 
 end to end through the Stop hook.
 
 **Built and covered by `npm test`, not yet run with a live model:** `build` mode
-(requirements → plan with structured verdicts → the Captain's signature → ordered
+(requirements → plan with structured verdicts → Gandalf's signature → ordered
 steps with kept evidence → done). **Built, unexercised:** the Slack mirror, the
 `openai` lane, the browser (Playwright) lane. **Not yet run:** a full voyage on a live
 question in the extension lane.

@@ -108,9 +108,9 @@ export async function exchange({ dir, claudeText, author = 'claude' }) {
 // while the latest Navigator reply is unreviewed by the Watch. Only `covenant resume`
 // (the Captain's word) reopens a paused thread.
 export function sendGate(meta, cfg = cfgFor(meta)) {
-  if (meta.state !== 'open') return `thread is ${meta.state}${meta.pausedReason ? `: ${meta.pausedReason}` : ''} — only \`covenant resume\` (the Captain) reopens it`;
+  if (meta.state !== 'open') return `the council is ${meta.state}${meta.pausedReason ? `: ${meta.pausedReason}` : ''} — only \`covenant resume\` (Gandalf) opens the door`;
   if (cfg.watch?.required !== false && meta.gptTurns > 0 && (!meta.watch || meta.watch.afterGptTurn < meta.gptTurns)) {
-    return `the Watch has not reviewed Navigator turn ${meta.gptTurns}: run \`covenant watch-brief\` → covenant-watch agent → \`covenant record --author watch\` first`;
+    return `Háma has not reviewed Gríma's turn ${meta.gptTurns}: run \`covenant watch-brief\` → covenant-watch agent → \`covenant record --author watch\` first`;
   }
   return buildSendGate(meta);
 }
@@ -119,7 +119,7 @@ export async function recordOnly({ dir, author, text, chatUrl }) {
   const meta = loadThread(dir);
   const cfg = cfgFor(meta);
   if (meta.state === 'closed') return { kind: 'skipped', reason: 'thread is closed', meta };
-  if (meta.state === 'paused' && author === 'claude') return { kind: 'skipped', reason: `thread is paused: ${meta.pausedReason || ''} — the Captain resumes it with \`covenant resume\``, meta };
+  if (meta.state === 'paused' && author === 'claude') return { kind: 'skipped', reason: `the council is paused: ${meta.pausedReason || ''} — Gandalf opens the door with \`covenant resume\``, meta };
   const t = String(text || '').trim();
   if (!t) return { kind: 'skipped', reason: 'empty message', meta };
   if (author === 'watch') return recordWatch(dir, meta, t);
@@ -198,17 +198,17 @@ export function watchBrief(dir, { exchanges = 3, maxChars = 3000 } = {}) {
   const meta = loadThread(dir);
   const events = readEvents(dir).filter((e) => ['claude', 'gpt', 'human'].includes(e.author));
   const recent = events.slice(-(exchanges * 2 + 1));
-  const label = { claude: 'Chief (Claude)', gpt: 'Navigator (GPT)', human: 'Captain (the owner)' };
+  const label = { claude: 'Théoden (Claude Code, the king)', gpt: 'Gríma (ChatGPT, the counsel)', human: 'Gandalf (the owner)' };
   const cut = (s) => (s.length > maxChars ? s.slice(0, maxChars) + '\n…(cut)' : s);
   const hours = ((Date.now() - Date.parse(meta.createdAt)) / 36e5).toFixed(1);
   const lines = [
-    `# Watch brief — thread ${meta.id}`,
+    `# Háma's brief — council ${meta.id}`,
     '',
     `**Goal:** ${meta.goal || '(none stated)'}`,
     `**Question:** ${meta.question}`,
-    `**Budget:** Navigator turn ${meta.gptTurns} of ${meta.cap}; ${hours} h elapsed; blind first take: ${meta.blind ? 'yes' : 'no'}`,
-    `**Navigator stances so far:** ${(meta.stances || []).join(' → ') || '(none)'}`,
-    `**Previous Watch verdict:** ${meta.watch ? `${meta.watch.verdict} after turn ${meta.watch.afterGptTurn}: ${meta.watch.reason}` : '(none)'}`,
+    `**Budget:** Gríma turn ${meta.gptTurns} of ${meta.cap}; ${hours} h elapsed; blind first take: ${meta.blind ? 'yes' : 'no'}`,
+    `**Gríma's stances so far:** ${(meta.stances || []).join(' → ') || '(none)'}`,
+    `**Previous verdict of Háma:** ${meta.watch ? `${meta.watch.verdict} after turn ${meta.watch.afterGptTurn}: ${meta.watch.reason}` : '(none)'}`,
     '',
     `## The last ${Math.min(recent.length, exchanges * 2 + 1)} messages, oldest first`,
   ];
@@ -233,20 +233,20 @@ export function outgoingText({ dir, text, lean }) {
     const brief = compileBrief(meta, { lean });
     writeFileSync(join(dir, 'brief.md'), brief);
     if (meta.mode === 'build') {
-      appendEvent(dir, { author: 'system', text: 'sent to the Navigator: the brief and the build goal (requirements phase)' });
-      return `${brief}\n\n---\n\n## Requirements\n\n${t || meta.question}\n\nList the acceptance requirements you would hold this build to, numbered R1…; the Chief will answer with its plan. End with the stance footer.`;
+      appendEvent(dir, { author: 'system', text: 'sent to Gríma: the brief and the build goal (requirements phase)' });
+      return `${brief}\n\n---\n\n## Requirements\n\n${t || meta.question}\n\nList the acceptance requirements you would hold this build to, numbered R1…; the king will answer with his plan. End with the stance footer.`;
     }
     if (meta.blind) {
-      appendEvent(dir, { author: 'system', text: 'sent to the Navigator: the question alone (blind first take)' });
-      return `${brief}\n\n---\n\n## The question\n\n${meta.question}\n\nAnswer it yourself first, in full, under "My take". The Chief's position follows in the next message; do not wait for it.`;
+      appendEvent(dir, { author: 'system', text: 'sent to Gríma: the question alone (blind first take)' });
+      return `${brief}\n\n---\n\n## The question\n\n${meta.question}\n\nAnswer it yourself first, in full, under "My take". The king's position follows in the next message; do not wait for it.`;
     }
-    return `${brief}\n\n---\n\n## The Chief's opening message\n\n${t}`;
+    return `${brief}\n\n---\n\n## The king's opening message\n\n${t}`;
   }
   if (meta.blind && meta.gptTurns === 1) {
-    appendEvent(dir, { author: 'system', text: "sent to the Navigator: the Chief's position (written before its first reply)" });
-    return `## The Chief's position (written before your first reply)\n\n${t}\n\nNow compare it with your take under "On the Chief's position": where you differ, what evidence would move you, and your recommendation.`;
+    appendEvent(dir, { author: 'system', text: "sent to Gríma: the king's position (written before Gríma's first reply)" });
+    return `## The king's position (written before your first reply)\n\n${t}\n\nNow compare it with your take under "On the king's position": where you differ, what evidence would move you, and your recommendation.`;
   }
-  return `## Chief (turn ${meta.claudeTurns || 1})\n\n${t}`;
+  return `## Théoden (turn ${meta.claudeTurns || 1})\n\n${t}`;
 }
 
 export async function closeThread(dir, { by, verdict }) {
@@ -304,16 +304,16 @@ function commit(project, meta, paths, cfg) {
 
 export function frameForClaude(r, cfg = loadConfigSafe(r.meta)) {
   const m = r.meta;
-  const head = `[Covenant · GPT turn ${m.gptTurns}/${m.cap} · thread ${m.id}]`;
+  const head = `[Covenant · Gríma turn ${m.gptTurns}/${m.cap} · council ${m.id}]`;
   switch (r.kind) {
     case 'relayed':
-      return `${head}\n\n${r.reply}\n\n---\nAnswer the Navigator in your next message (it is relayed automatically). To end, write a final line \`${cfg.closeLine} <one-line verdict>\`. To talk to the Captain instead, run \`covenant pause\` first.`;
+      return `${head}\n\n${r.reply}\n\n---\nAnswer Gríma in your next message (it is relayed automatically). To end, write a final line \`${cfg.closeLine} <one-line verdict>\`. To talk to Gandalf instead, run \`covenant pause\` first.`;
     case 'closed-by-gpt':
-      return `${head}\n\n${r.reply}\n\n---\nThe Navigator closed the thread with: "${r.verdict}". The thread is closed and recorded (${m.id}). Give the Captain a short summary of the outcome; nothing further is relayed.`;
+      return `${head}\n\n${r.reply}\n\n---\nGríma closed the council with: "${r.verdict}". The council is closed and recorded (${m.id}). Give Gandalf a short summary of the outcome; nothing further is relayed.`;
     case 'cap':
-      return `${head}\n\n${r.reply}\n\n---\nThe cap of ${m.cap} GPT turns is reached; the thread is closed and recorded (${m.id}). Give the Captain a short summary of where it ended; nothing further is relayed.`;
+      return `${head}\n\n${r.reply}\n\n---\nThe cap of ${m.cap} Gríma turns is reached; the council is closed and recorded (${m.id}). Give Gandalf a short summary of where it ended; nothing further is relayed.`;
     case 'paused':
-      return `[Covenant · thread ${m.id} PAUSED]\n\n${r.reason}\n\nTell the Captain; \`covenant resume\` continues once it is fixed. Nothing is relayed while paused.`;
+      return `[Covenant · council ${m.id} PAUSED]\n\n${r.reason}\n\nTell Gandalf; \`covenant resume\` continues once it is fixed. Nothing is relayed while paused.`;
     default:
       return null;
   }

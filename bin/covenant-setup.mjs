@@ -4,7 +4,7 @@
 //   covenant-setup [--project-url URL] [--browser tools|server] [--no-commit] [--cwd REPO]
 //
 // Same as `covenant setup`: marker + data dir (named after the repo folder), launcher,
-// skills, Watch agent, allow rules, Stop hook, gitignore line, pack, doctor report,
+// skills, Háma agent, allow rules, Stop hook, gitignore line, pack, doctor report,
 // and a --only commit on the current branch. Prints a human summary, then the JSON.
 import { resolve } from 'node:path';
 import { setup } from '../src/setup.mjs';

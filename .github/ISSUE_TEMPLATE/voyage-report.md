@@ -1,18 +1,18 @@
 ---
 name: Voyage report
-about: A thread that did not go as the Captain expected
+about: A council that did not go as Gandalf expected
 title: "Voyage: <one line>"
 labels: voyage
 ---
 
 **Lane:** extension / codex / browser
 
-**What the Captain expected:**
+**What Gandalf expected:**
 
 **What happened:**
 
 **Attachments** (private details removed):
-- `transcript.md` of the thread
+- `transcript.md` of the council
 - output of `covenant doctor`
 - page helper version (`__covenant.v` in the ChatGPT tab), if the extension lane
 - the exact refusal text, if Claude Code's safety layer stopped a step, and whether the session was in auto mode

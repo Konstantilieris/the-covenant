@@ -118,7 +118,7 @@ export function applyVerdict(dir, meta, reply) {
   meta.lastVerdict = { ...v, at: nowIso(), phase: meta.phase, step: meta.phase === 'execute' ? currentStep(meta)?.n ?? null : null };
   if (meta.phase === 'plan') {
     meta.plan.agreed = v.verdict === 'agree';
-    appendEvent(dir, { author: 'system', text: `plan v${meta.plan.version}: Navigator ${v.verdict}${v.blocking ? ` (${v.blocking} blocking)` : ''}` });
+    appendEvent(dir, { author: 'system', text: `plan v${meta.plan.version}: Gríma ${v.verdict}${v.blocking ? ` (${v.blocking} blocking)` : ''}` });
   } else if (meta.phase === 'execute') {
     const step = currentStep(meta);
     if (step && step.status === 'done') {
@@ -126,7 +126,7 @@ export function applyVerdict(dir, meta, reply) {
       if (v.verdict === 'agree') {
         step.status = 'agreed';
         step.agreedAt = nowIso();
-        appendEvent(dir, { author: 'system', text: `step ${step.n} agreed by the Navigator` });
+        appendEvent(dir, { author: 'system', text: `step ${step.n} agreed by Gríma` });
         if (meta.plan.steps.every((s) => s.status === 'agreed')) {
           meta.phase = 'done';
           appendEvent(dir, { author: 'system', text: 'all steps agreed: the build is done — close with the verdict line' });
@@ -134,7 +134,7 @@ export function applyVerdict(dir, meta, reply) {
       } else if (step.attempts >= MAX_STEP_ATTEMPTS) {
         step.status = 'blocked';
         meta.state = 'paused';
-        meta.pausedReason = `step ${step.n} rejected ${step.attempts} times — the Captain decides`;
+        meta.pausedReason = `step ${step.n} rejected ${step.attempts} times — Gandalf decides`;
         appendEvent(dir, { author: 'system', text: `paused: ${meta.pausedReason}` });
       } else {
         step.status = 'rework';
@@ -148,7 +148,7 @@ export function applyVerdict(dir, meta, reply) {
 export function signPlan(dir, by = 'the Captain') {
   const meta = loadThread(dir);
   if (meta.mode !== 'build' || !meta.plan) throw new Error('no plan to sign');
-  if (!meta.plan.agreed) throw new Error(`plan v${meta.plan.version} is not agreed by the Navigator yet (last verdict: ${meta.lastVerdict?.verdict || 'none'})`);
+  if (!meta.plan.agreed) throw new Error(`plan v${meta.plan.version} is not agreed by Gríma yet (last verdict: ${meta.lastVerdict?.verdict || 'none'})`);
   meta.plan.signedAt = nowIso();
   meta.plan.signedBy = by;
   meta.phase = 'execute';
@@ -218,7 +218,7 @@ export function stepReviewText(dir, n, { maxChars = 6000 } = {}) {
     lines.push(`### Evidence: ${basename(f).replace(/^attempt-\d+-/, '')}`, '', '```', t.trim(), '```', '');
   }
   if (step.objections?.length) lines.push('**Previous objections addressed:** ' + step.objections.map((o) => o.id).join(', '), '');
-  lines.push('Review this step against the plan and the evidence. In the codex lane, open the files and run the tests yourself. Answer with your findings and end with a ```verdict block: `agree`, or `objections` with id, severity (blocker | major | minor), claim, evidence and change.');
+  lines.push('Review this step against the plan and the evidence. In the codex lane, open the files and run the tests yourself. Answer with your findings and end with a ```verdict block: `agree`, or `objections` with id, severity (blocker | major | minor), claim, evidence and change. A step is sent back at most twice; then Gandalf decides.');
   return lines.join('\n');
 }
 

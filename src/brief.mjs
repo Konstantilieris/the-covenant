@@ -49,13 +49,13 @@ export function compileBrief(meta, { lean = false } = {}) {
   const B = cfg.briefBudgetChars;
   const p = project.dataDir;
   const parts = [];
-  parts.push(`# The Covenant — thread "${meta.title}"`, '');
-  if (meta.goal) parts.push('## Goal of this thread', '', meta.goal, '', 'The thread ends when this goal is met; say so with the close line when it is.', '');
+  parts.push(`# The Covenant — council "${meta.title}"`, '');
+  if (meta.goal) parts.push('## Goal of this council', '', meta.goal, '', 'The council ends when this goal is met; say so with the close line when it is.', '');
   if (meta.mode === 'build') {
     parts.push(
-      '## This is a build thread',
+      '## This is a build council (the muster)',
       '',
-      'Phases: **requirements** (you list what done must satisfy; the Chief answers) → **plan** (the Chief proposes numbered steps with files and tests; you review until no blocker or major objection remains; then the Captain signs) → **execute** (the Chief does one step at a time and sends the evidence: the diff, the test output, a claim; you check it against the plan, in the codex lane by opening the files and running the tests yourself) → **done**.',
+      'Phases: **requirements** (you list what done must satisfy; the king answers) → **plan** (the king proposes numbered steps with files and tests; you review until no blocker or major objection remains; then Gandalf signs) → **execute** (the king does one step at a time and sends the evidence: the diff, the test output, a claim; you check it against the plan, in the codex lane by opening the files and running the tests yourself) → **done**.',
       '',
       'Every plan review and every step review ends with a fenced verdict block, exactly this shape:',
       '',
@@ -63,12 +63,12 @@ export function compileBrief(meta, { lean = false } = {}) {
       '{"verdict":"agree","objections":[]}',
       '```',
       '',
-      'or `{"verdict":"objections","objections":[{"id":"S2-1","severity":"blocker|major|minor","claim":"…","evidence":"path:line or test name","change":"…"}]}`. `agree` only when no blocker or major remains; a step is sent back at most twice, then the Captain decides.',
+      'or `{"verdict":"objections","objections":[{"id":"S2-1","severity":"blocker|major|minor","claim":"…","evidence":"path:line or test name","change":"…"}]}`. `agree` only when no blocker or major remains; a step is sent back at most twice, then Gandalf decides.',
       '',
     );
   }
   if (lean) {
-    parts.push('## How this works', '', `This is a Covenant thread: a dialogue with the Chief (Claude Code) about the project in this ChatGPT project. Your project instructions apply. Turn cap: ${meta.cap} replies from you. End it when the goal is met with a final line \`${cfg.closeLine} <one-line verdict>\`; the Chief can do the same.`, '');
+    parts.push('## How this works', '', `This is a Covenant council: a dialogue with Théoden (Claude Code) about the project in this ChatGPT project. Your project instructions apply. Turn cap: ${meta.cap} replies from you. End it when the goal is met with a final line \`${cfg.closeLine} <one-line verdict>\`; the king can do the same.`, '');
   } else {
     parts.push('## How this works', '', cut(readOr(join(p, 'persona.md'), defaultPersona(cfg)), B.persona), '');
     const owner = readOr(join(p, 'owner.md'));
@@ -77,28 +77,28 @@ export function compileBrief(meta, { lean = false } = {}) {
     if (brief) parts.push('## The project', '', cut(brief, B.brief), '');
   }
   const ledger = readOr(join(p, 'ledger.md'));
-  if (ledger && /^- /m.test(ledger)) parts.push('## What the Covenant already settled (newest first)', '', cut(ledgerNewestFirst(ledger), B.ledger), '');
+  if (ledger && /^- /m.test(ledger)) parts.push('## What the annals already hold (newest first)', '', cut(ledgerNewestFirst(ledger), B.ledger), '');
   const history = readOr(join(p, 'history.md'));
   if (history) parts.push('## What you and the owner settled before the Covenant', '', cut(history, B.history), '');
   const thread = [`**Question:** ${meta.question}`];
-  if (meta.contextPaths?.length) thread.push('', '**Files the Chief names as relevant** (paths in the repo):', ...meta.contextPaths.map((f) => `- \`${f}\``));
+  if (meta.contextPaths?.length) thread.push('', '**Files the king names as relevant** (paths in the repo):', ...meta.contextPaths.map((f) => `- \`${f}\``));
   const mem = matchingMemoryLines(cfg.claudeMemoryIndex || claudeMemoryIndexFor(project.repoRoot), `${meta.goal || ''} ${meta.question}`, Math.floor(B.thread / 2));
-  if (mem) thread.push('', "**From the Chief's memory index** (things Claude knows that you may not):", mem);
-  parts.push('## This thread', '', cut(thread.join('\n'), B.thread), '');
-  if (!lean) parts.push(`Turn cap: ${meta.cap} replies from you. End the thread when the goal is met with a final line \`${cfg.closeLine} <one-line verdict>\`. The Chief can do the same.`, '');
+  if (mem) thread.push('', "**From the king's memory index** (things Claude knows that you may not):", mem);
+  parts.push('## This council', '', cut(thread.join('\n'), B.thread), '');
+  if (!lean) parts.push(`Turn cap: ${meta.cap} replies from you. End the council when the goal is met with a final line \`${cfg.closeLine} <one-line verdict>\`. The king can do the same.`, '');
   return parts.join('\n');
 }
 
 export function defaultPersona(cfg) {
   return [
-    'You are the Navigator in the Covenant: a recorded dialogue with the Chief (Claude Code, working inside a real codebase with tools). The Captain (the owner) reads the transcript afterwards and decides. You are the second mind, not the second vote.',
+    'You are the Counsel at the king\'s table in the Golden Hall of the Covenant: a recorded council with Théoden (Claude Code, working inside a real codebase with tools). Gandalf (the owner) reads the record afterwards and decides. You are the second mind, not the second vote, and your counsel is tested, never trusted on charm.',
     '',
-    '- Think first, read second: write your own answer under "My take" before weighing the Chief\'s under "On the Chief\'s position".',
-    '- Argue from evidence; when you do not know, ask the Chief to quote the code with the path.',
+    '- Think first, read second: write your own answer under "My take" before weighing the king\'s under "On the king\'s position".',
+    '- Argue from evidence; when you do not know, ask the king to quote the code with the path.',
     '- Say where you differ and why; agreement is earned by evidence. Inventing objections is a failure in the same way a rubber stamp is.',
     '- Widen the frame once: one angle nobody raised, or "No better angle".',
     '- One recommendation, plain language, under ~400 words.',
-    '- A message marked "From the Captain" overrides both of us: answer it first.',
+    '- A message marked "From Gandalf" overrides both of us: answer it first.',
     '- End every reply with: STANCE: hold | moved: <what> | agree  and  CONFIDENCE: low | medium | high',
     `- When the goal is met, end with the line \`${cfg.closeLine} <one-line verdict>\`.`,
   ].join('\n');

@@ -33,7 +33,7 @@ export function slackOpen(dir) {
     const channel = (outText.match(/C[0-9A-Z]{8,}/) || [outText])[0];
     meta.slack = { channel, name };
     saveThread(dir, meta);
-    post(dir, meta, `:handshake: *Covenant thread: ${meta.title}*\n_Goal:_ ${meta.goal}\n_Cap:_ ${meta.cap} Navigator turns · reply here to speak as the Captain; "stop" ends the thread_`, null);
+    post(dir, meta, `:handshake: *Covenant thread: ${meta.title}*\n_Goal:_ ${meta.goal}\n_Cap:_ ${meta.cap} Gríma turns · reply here to speak as Gandalf; "stop" ends the thread_`, null);
     note(dir, `channel ${name} (${channel}) opened`);
     return meta.slack;
   } catch (e) {
@@ -45,7 +45,7 @@ export function slackOpen(dir) {
 export function slackPost(dir, author, text) {
   const meta = loadThread(dir);
   if (!meta.slack?.channel) return;
-  const label = { claude: '*Chief*', gpt: '*Navigator*', human: '*Captain*', watch: '*Watch*' }[author] || author;
+  const label = { claude: '*Théoden*', gpt: '*Gríma*', human: '*Gandalf*', watch: '*Háma*' }[author] || author;
   post(dir, meta, `${label}\n${text}`, author);
 }
 

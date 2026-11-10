@@ -68,7 +68,7 @@ export function install({ browser = 'tools' } = {}) {
     report.skills.push(dst);
   }
 
-  // 4. the Watch agent
+  // 4. Háma agent
   const agentsDst = join(CLAUDE, 'agents');
   mkdirSync(agentsDst, { recursive: true });
   for (const f of readdirSync(join(ROOT, 'agents'))) {

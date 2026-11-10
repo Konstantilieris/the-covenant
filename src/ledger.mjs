@@ -1,6 +1,6 @@
 // One thread = one directory under <dataDir>/threads/<yyyy-mm-dd>-<slug>/:
 //   thread.json    metadata and state
-//   brief.md       the compiled brief the Navigator was given (snapshot)
+//   brief.md       the compiled brief Gríma was given (snapshot)
 //   events.jsonl   append-only: every message, every state change
 //   transcript.md  rendered after every turn
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -94,7 +94,7 @@ export function readEvents(dir) {
     .map((l) => JSON.parse(l));
 }
 
-const label = { claude: 'Chief (Claude)', gpt: 'Navigator (GPT)', human: 'Captain', watch: 'Watch', system: 'System' };
+const label = { claude: 'Théoden (Claude)', gpt: 'Gríma (GPT)', human: 'Gandalf', watch: 'Háma', system: 'System' };
 
 export function render(dir) {
   const meta = loadThread(dir);
@@ -107,7 +107,7 @@ export function render(dir) {
     `- Adapter: ${meta.adapter}${meta.model ? ` · model ${meta.model}` : ''} · GPT turns ${meta.gptTurns}/${meta.cap}${meta.blind ? ' · blind first take' : ''}${meta.lastStance ? ` · GPT's last stance: ${meta.lastStance}` : ''}`,
     meta.goal ? `- Goal: ${meta.goal}` : null,
     meta.mode === 'build' ? `- Build: phase ${meta.phase}${meta.plan ? ` · plan v${meta.plan.version}${meta.plan.signedAt ? ` signed by ${meta.plan.signedBy}` : meta.plan.agreed ? ' agreed, unsigned' : ' under review'} · steps ${meta.plan.steps.filter((s) => s.status === 'agreed').length}/${meta.plan.steps.length} agreed` : ''}` : null,
-    meta.watch ? `- Watch: ${meta.watch.verdict} after GPT turn ${meta.watch.afterGptTurn} — ${meta.watch.reason}` : null,
+    meta.watch ? `- Háma: ${meta.watch.verdict} after GPT turn ${meta.watch.afterGptTurn} — ${meta.watch.reason}` : null,
     meta.slack?.name ? `- Slack: #${meta.slack.name}` : null,
     meta.chat?.url ? `- Chat: ${meta.chat.url}` : meta.chat?.threadId ? `- Codex thread: ${meta.chat.threadId}` : null,
     meta.verdict ? `- Verdict: ${meta.verdict}` : null,
@@ -120,7 +120,7 @@ export function render(dir) {
       continue;
     }
     if (ev.author === 'watch') {
-      lines.push(`> **Watch** (${ev.ts.slice(11, 19)}): ${ev.text.replace(/\n/g, ' · ')}`, '');
+      lines.push(`> **Háma** (${ev.ts.slice(11, 19)}): ${ev.text.replace(/\n/g, ' · ')}`, '');
       continue;
     }
     n++;

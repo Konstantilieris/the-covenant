@@ -13,14 +13,14 @@
 //   covenant plan propose --file plan.md | plan sign [--by NAME] | plan review-text      build mode
 //   covenant step start [n] | step done [n] --evidence a,b [--note "…"] | step review-text [n]
 //   covenant outgoing --plan | --step [n]                    the review message for the plan / a step
-//   covenant slack-pull [--thread DIR]                       the Captain's Slack replies → recorded
+//   covenant slack-pull [--thread DIR]                       Gandalf's Slack replies → recorded
 //   covenant record --author claude|gpt|human|watch (--message-file F | --message M | --from-clipboard)
 //                   [--thread DIR] [--chat-url U]           log a message, move the state, run the guard
 //   covenant outgoing [--message-file F] [--thread DIR] [--clip] [--full] the exact text to send
-//                     (blind thread: 1st send = question only, 2nd = the Chief's position)
+//                     (blind thread: 1st send = question only, 2nd = Théoden's position)
 //   covenant watch-brief [--thread DIR]                      the prompt for the covenant-watch agent
 //   covenant context [--thread DIR] [--budget N] [--clip]    goal context: pack sections + named files
-//   covenant attach --file F [--thread DIR] [--as NAME] [--note "…"]   a file for the Navigator mid-thread
+//   covenant attach --file F [--thread DIR] [--as NAME] [--note "…"]   a file for Gríma mid-thread
 //   covenant helper                                          print the chatgpt.com page helper
 //   covenant instructions [--clip]                           persona + owner = the ChatGPT project's instructions
 //   covenant pack [--repo DIR]                               build <dataDir>/files/ for the project's Sources
@@ -30,12 +30,12 @@
 //   covenant config [--set key=value]                        this machine's overrides (~/.covenant/config.json)
 //   covenant turn [--thread DIR] (--message M | --message-file F)        hook lanes (codex, browser)
 //   covenant status | threads | pending | unclaim
-//   covenant pause | resume | stop [--thread DIR]            stop = close by the Captain
+//   covenant pause | resume | stop [--thread DIR]            stop = close by Gandalf
 //   covenant close [--thread DIR] [--verdict V]
 //   covenant render [--thread DIR]
 //   covenant compile --title T [--goal G] [--question Q] [--context a,b] [--lean]
 //   covenant browser [--dev]                                 the Playwright daemon (browser lane)
-//   covenant install [--browser tools|server] [--plan]       hook, allow rules, skills, Watch agent → ~/.claude
+//   covenant install [--browser tools|server] [--plan]       hook, allow rules, skills, Háma agent → ~/.claude
 //   covenant uninstall                                       removes exactly what install added
 //
 // Every command accepts --cwd DIR (default: the current directory).
@@ -85,19 +85,19 @@ const thread = () => resolveThreadDir(flags.thread, cwd);
 function nextStep(r, cfg) {
   if (r.kind === 'watch') {
     return {
-      'on-course': 'continue: answer the Navigator',
-      nudge: `answer the Navigator and open your message with "Watch: ${r.watch.nudge || r.watch.reason}"`,
-      pause: 'the Watch paused the thread: end your turn with a short summary for the Captain',
-      close: `the Watch says the goal is met: close with "${cfg.closeLine} ${r.watch.verdictLine || '<verdict>'}" if you agree; otherwise covenant pause and ask the Captain`,
+      'on-course': 'continue: answer Gríma',
+      nudge: `answer Gríma and open your message with "Háma: ${r.watch.nudge || r.watch.reason}"`,
+      pause: 'Háma paused the thread: end your turn with a short summary for Gandalf',
+      close: `Háma says the goal is met: close with "${cfg.closeLine} ${r.watch.verdictLine || '<verdict>'}" if you agree; otherwise covenant pause and ask Gandalf`,
     }[r.verdict];
   }
   if (r.kind === 'recorded') {
     if (r.meta.state !== 'open') return `thread is ${r.meta.state}${r.meta.pausedReason ? `: ${r.meta.pausedReason}` : ''}`;
-    if (r.lastAuthor === 'human') return 'answer the Captain first; open your next message to the Navigator with "From the Captain: …"';
-    if (r.lastAuthor === 'gpt') return `${r.flags?.stalled ? 'STALLED (three holds in a row) — ' : ''}run the Watch: covenant watch-brief → covenant-watch agent → record --author watch; then answer the Navigator`;
+    if (r.lastAuthor === 'human') return 'answer Gandalf first; open your next message to Gríma with "From Gandalf: …"';
+    if (r.lastAuthor === 'gpt') return `${r.flags?.stalled ? 'STALLED (three holds in a row) — ' : ''}run Háma: covenant watch-brief → covenant-watch agent → record --author watch; then answer Gríma`;
     return 'send it: outgoing --clip, paste into ChatGPT, Return, wait, then record --author gpt';
   }
-  if (['closed-by-claude', 'closed-by-gpt', 'cap'].includes(r.kind)) return 'thread closed and recorded: summarize the outcome for the Captain';
+  if (['closed-by-claude', 'closed-by-gpt', 'cap'].includes(r.kind)) return 'thread closed and recorded: summarize the outcome for Gandalf';
   return r.reason || r.kind;
 }
 
@@ -157,7 +157,7 @@ const commands = {
     const sub = pos[1];
     const dir = thread();
     if (sub === 'propose') out(proposePlan(dir, flags.file || die('--file <plan.md> is required')));
-    else if (sub === 'sign') out(signPlan(dir, flags.by && flags.by !== true ? String(flags.by) : 'the Captain'));
+    else if (sub === 'sign') out(signPlan(dir, flags.by && flags.by !== true ? String(flags.by) : 'Gandalf'));
     else if (sub === 'review-text') out(planReviewText(dir));
     else die('plan propose --file F | plan sign | plan review-text');
   },
@@ -170,7 +170,7 @@ const commands = {
     else if (sub === 'review-text') out(stepReviewText(dir, n));
     else die('step start [n] | step done [n] --evidence a,b [--note "…"] | step review-text [n]');
   },
-  // The Captain's words from the Slack channel, if the mirror is on.
+  // Gandalf's words from the Slack channel, if the mirror is on.
   async 'slack-pull'() {
     const dir = thread();
     const fresh = slackPull(dir);
@@ -205,7 +205,7 @@ const commands = {
     text = text ?? '';
     const lean = flags.full ? false : flags.lean ? true : !!cfg.browser.projectUrl;
     const t = outgoingText({ dir, text, lean });
-    const what = meta.mode === 'build' ? (meta.gptTurns === 0 ? 'the brief and the requirements question' : flags.plan ? `plan v${meta.plan?.version} for review` : flags.step ? `step ${flags.step === true ? 'current' : flags.step} for review` : `Chief turn ${meta.claudeTurns}`) : questionOnly ? 'the question alone (blind first take)' : meta.blind && meta.gptTurns === 1 ? "the Chief's position" : `Chief turn ${meta.claudeTurns}`;
+    const what = meta.mode === 'build' ? (meta.gptTurns === 0 ? 'the brief and the requirements question' : flags.plan ? `plan v${meta.plan?.version} for review` : flags.step ? `step ${flags.step === true ? 'current' : flags.step} for review` : `Théoden turn ${meta.claudeTurns}`) : questionOnly ? 'the question alone (blind first take)' : meta.blind && meta.gptTurns === 1 ? "Théoden's position" : `Théoden turn ${meta.claudeTurns}`;
     if (flags.clip) {
       const paced = pace(cfg); // human cadence: a short wait is served here, a daily cap refuses
       setClipboard(t);
@@ -236,7 +236,7 @@ const commands = {
     const adir = join(dir, 'attachments');
     mkdirSync(adir, { recursive: true });
     writeFileSync(join(adir, name), text);
-    appendEvent(dir, { author: 'system', text: `attachment prepared for the Navigator: ${name} (${text.length} chars) → attachments/${name}` });
+    appendEvent(dir, { author: 'system', text: `attachment prepared for Gríma: ${name} (${text.length} chars) → attachments/${name}` });
     const framed = `${flags.note ? `${flags.note}\n\n` : ''}## Attachment: ${name}\n\n${text}`;
     setClipboard(framed);
     out({ clipboard: true, name, chars: framed.length, kept: join(adir, name), next: `paste into the composer (a long paste becomes an attachment chip), type "Attached: ${name}", Return, wait, read, then record --author claude --message "attached ${name}: <one line>"` });
@@ -349,14 +349,14 @@ const commands = {
     out('pending cleared');
   },
   async pause() {
-    setState('paused', flags.reason || 'paused by the Captain');
+    setState('paused', flags.reason || 'paused by Gandalf');
   },
   async resume() {
-    setState('open', null, `resumed by ${flags.by || 'the Captain'}`);
+    setState('open', null, `resumed by ${flags.by || 'Gandalf'}`);
   },
   async stop() {
     const dir = thread();
-    await closeThread(dir, { by: 'human', verdict: flags.verdict || 'stopped by the Captain' });
+    await closeThread(dir, { by: 'human', verdict: flags.verdict || 'stopped by Gandalf' });
     out(`closed ${dir}`);
   },
   async close() {

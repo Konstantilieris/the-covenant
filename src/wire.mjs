@@ -4,7 +4,7 @@
 //   <repo>/tools/covenant.mjs                     the launcher (fetches the Covenant if missing)
 //   <repo>/.claude/skills/covenant/*              the /covenant skill, CLI = node tools/covenant.mjs
 //   <repo>/.claude/skills/covenant-setup/SKILL.md
-//   <repo>/.claude/agents/covenant-watch.md       the Watch
+//   <repo>/.claude/agents/covenant-watch.md       Háma
 //   <repo>/.claude/settings.json                  permissions.allow for the browser tools and the
 //                                                 launcher, and the Stop hook (merged, idempotent)
 //

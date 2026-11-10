@@ -1,6 +1,6 @@
 ---
 name: covenant-setup
-description: Install the Covenant for the repo you are in, in one go — check the requirements, fetch the Covenant if this machine lacks it, run `covenant setup` (marker, data dir, launcher, skills, Watch agent, allow rules, hook, pack, commit), create the ChatGPT project through the Claude in Chrome extension, add the sources, smoke the loop. Use when the user says "/covenant-setup", "install the covenant", "set up the covenant".
+description: Install the Covenant for the repo you are in, in one go — check the requirements, fetch the Covenant if this machine lacks it, run `covenant setup` (marker, data dir, launcher, skills, Háma agent, allow rules, hook, pack, commit), create the ChatGPT project through the Claude in Chrome extension, add the sources, smoke the loop. Use when the user says "/covenant-setup", "install the covenant", "set up the covenant".
 disable-model-invocation: true
 ---
 
@@ -8,8 +8,8 @@ disable-model-invocation: true
 
 `$ARGUMENTS`: `[--lane extension|codex] [--project-url <ChatGPT project URL>] [--skip-project]`
 
-The Covenant is a dialogue loop between Claude Code (the Chief) and the owner's
-ChatGPT (the Navigator), recorded in the codebase under `docs/covenant/`, watched by
+The Covenant is a dialogue loop between Claude Code (Théoden) and the owner's
+ChatGPT (Gríma), recorded in the codebase under `docs/covenant/`, watched by
 an agent. It works for **the repo you are in**; the project is named after the repo
 folder. Steps that need the human's hands say so; never type credentials; never open
 a second browser window.
@@ -49,7 +49,7 @@ covenant-setup [--project-url <url>] [--browser server]
 
 Run from the repo root. It writes `.covenant.json` and `docs/covenant/` (skipping what
 exists; the project is named after the repo folder), the launcher `tools/covenant.mjs`,
-the skills and the Watch agent under `.claude/`, the allow rules and the Stop hook into
+the skills and Háma agent under `.claude/`, the allow rules and the Stop hook into
 `.claude/settings.json`, the gitignore line for the pack; builds the pack; prints a
 doctor report; commits only those files on the current branch.
 
@@ -66,7 +66,7 @@ of the Bash command.
 
 ## 3. The project files
 
-With the human: `docs/covenant/persona.md` (how the Navigator behaves), `owner.md` (who
+With the human: `docs/covenant/persona.md` (how Gríma behaves), `owner.md` (who
 they are, how they like to work), `brief.md` (the project in a page), `pack.json` (what
 the context pack bundles). If a teammate already filled them, leave them. Then
 `node tools/covenant.mjs pack` again if `pack.json` changed.
@@ -96,19 +96,19 @@ Each person has their own ChatGPT project; the repo files are shared.
 
 ```bash
 node tools/covenant.mjs open --title "setup smoke" --goal "Prove the loop end to end: one message in, one reply recorded." --question "Reply with the single word pong." --cap 1 --no-blind
-node tools/covenant.mjs outgoing --thread <dir> --message "Setup smoke: reply with the single word pong." --clip
+node tools/covenant.mjs outgoing --council <dir> --message "Setup smoke: reply with the single word pong." --clip
 ```
 
 Extension lane: `navigate` to the project URL, install the page helper
 (`node tools/covenant.mjs helper` → `javascript_tool`), `__covenant.focus(); __covenant.mark()`,
 `ctrl+a`, `Delete`, `ctrl+v`, `Return`, `await __covenant.wait(20000)` until done,
 `__covenant.reply()`, write it to `<dir>/gpt-1.md`,
-`node tools/covenant.mjs record --thread <dir> --author gpt --message-file <dir>/gpt-1.md --chat-url <url>`.
-Codex lane: `node tools/covenant.mjs turn --thread <dir> --message "Setup smoke: reply with the single word pong."`.
-The thread closes on the cap; `node tools/covenant.mjs threads` lists it closed.
+`node tools/covenant.mjs record --council <dir> --author gpt --message-file <dir>/gpt-1.md --chat-url <url>`.
+Codex lane: `node tools/covenant.mjs turn --council <dir> --message "Setup smoke: reply with the single word pong."`.
+The council closes on the cap; `node tools/covenant.mjs councils` lists it closed.
 
 ## 6. Report
 
 Say what is installed and where, the lane, the project URL, which files are in Sources,
 the doctor result, that the commit is on the current branch and not pushed, and that
-Claude Code must be restarted in this repo for `/covenant` and the Watch agent to load.
+Claude Code must be restarted in this repo for `/covenant` and Háma agent to load.

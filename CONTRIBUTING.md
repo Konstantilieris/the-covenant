@@ -7,15 +7,15 @@ browser, model or network, on Node 22 and 24.
 ## Reporting a voyage that went wrong
 
 Open an issue with the "Voyage report" template. Attach, with anything private
-removed: the thread's `transcript.md`, the output of `covenant doctor`, the page
-helper version (`__covenant.v` in the tab), which lane, and what the Captain
+removed: the council's `transcript.md`, the output of `covenant doctor`, the page
+helper version (`__covenant.v` in the tab), which lane, and what Gandalf
 expected to happen. A refusal by Claude Code's safety layer is a report too: say
 which step, and whether the session was in auto mode.
 
 ## Proposing a change
 
 Small and obvious: open the pull request. Anything that changes the protocol (the
-brief, the gates, the Watch rubric, the persona template) starts as an issue with the
+brief, the gates, Háma rubric, the persona template) starts as an issue with the
 reasoning, because every repo that wired the Covenant inherits it on its next
 `covenant-setup`.
 

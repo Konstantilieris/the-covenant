@@ -27,7 +27,7 @@ const html = `<!doctype html><meta charset="utf-8"><style>
     radial-gradient(1px 1px at 300px 560px,#e6ebf1 60%,transparent 61%),
     radial-gradient(1px 1px at 700px 40px,#e6ebf1 60%,transparent 61%),
     radial-gradient(1px 1px at 60px 420px,#e6ebf1 60%,transparent 61%);opacity:.7}
-</style><div class="wrap"><div class="stars"></div><pre>${ship.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><h1>THE COVENANT</h1><p>Two minds on the bridge. One captain. Every decision logged.</p></div>`;
+</style><div class="wrap"><div class="stars"></div><pre>${ship.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><h1>THE COVENANT</h1><p>The counsel is heard. The king rides. Gandalf has the last word.</p></div>`;
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 640 } });

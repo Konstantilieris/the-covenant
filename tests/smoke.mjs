@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // `npm test` — the bookkeeping, end to end, in a throwaway git repo. No browser, no
 // model, no network: init, pack, doctor, open, goal context, blind sends, the brake
-// (no send until the Watch has spoken; a pause refuses sends and Chief messages),
-// pause/resume, the Captain's record, close by the Navigator, the ledger line, the
+// (no send until Háma has spoken; a pause refuses sends and Théoden messages),
+// pause/resume, Gandalf's record, close by Gríma, the ledger line, the
 // commit on a feature branch. Exits non-zero on the first failed check.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -65,37 +65,37 @@ try {
 
   writeFileSync(join(dir, 'claude-1.md'), 'Position: the gates hold if outgoing refuses in both states.\n');
   const rec1 = json(cov(['record', '--thread', dir, '--author', 'claude', '--message-file', join(dir, 'claude-1.md')]).out);
-  check('the Chief\'s position is recorded first', rec1.kind === 'recorded');
+  check('Théoden\'s position is recorded first', rec1.kind === 'recorded');
 
   const first = cov(['outgoing', '--thread', dir]).out;
   check('first send is the question alone (blind)', first.includes('## The question') && !first.includes('Position: the gates'));
 
   writeFileSync(join(dir, 'gpt-1.md'), 'My take: yes.\n\nSTANCE: hold\nCONFIDENCE: medium\n');
   const rec2 = json(cov(['record', '--thread', dir, '--author', 'gpt', '--message-file', join(dir, 'gpt-1.md'), '--chat-url', 'https://chatgpt.com/c/x']).out);
-  check('the Navigator\'s reply is recorded with its stance', rec2.kind === 'recorded' && rec2.lastStance === 'hold (medium)');
+  check('Gríma\'s reply is recorded with its stance', rec2.kind === 'recorded' && rec2.lastStance === 'hold (medium)');
 
   const unwatched = cov(['outgoing', '--thread', dir, '--message-file', join(dir, 'claude-1.md')], { expectFail: true });
-  check('no send until the Watch has reviewed the reply', !unwatched.ok && /Watch has not reviewed/.test(unwatched.err));
+  check('no send until Háma has reviewed the reply', !unwatched.ok && /Háma has not reviewed/.test(unwatched.err));
 
   const w = json(cov(['record', '--thread', dir, '--author', 'watch', '--message', '{"verdict":"pause","progress":"off-goal","reason":"test pause","nudge":null,"verdictLine":null,"safety":[]}']).out);
-  check('a Watch pause pauses the thread', w.kind === 'watch' && w.state === 'paused');
+  check('Háma pause pauses the thread', w.kind === 'watch' && w.state === 'paused');
   const paused = cov(['outgoing', '--thread', dir, '--message-file', join(dir, 'claude-1.md')], { expectFail: true });
   check('a paused thread refuses sends', !paused.ok && /paused/.test(paused.err));
   const pausedRec = cov(['record', '--thread', dir, '--author', 'claude', '--message', 'talking while paused'], { expectFail: true });
-  check('a paused thread refuses Chief messages', !pausedRec.ok);
+  check('a paused thread refuses Théoden messages', !pausedRec.ok);
 
   cov(['resume', '--thread', dir]);
   const second = cov(['outgoing', '--thread', dir, '--message-file', join(dir, 'claude-1.md')]).out;
-  check('after resume the position goes over', second.includes("The Chief's position"));
+  check('after resume the position goes over', second.includes("king's position"));
 
-  const cap = json(cov(['record', '--thread', dir, '--author', 'human', '--message', 'From the Captain: keep it short.']).out);
-  check('the Captain\'s words are recorded and answered first', /Captain/.test(cap.next));
+  const cap = json(cov(['record', '--thread', dir, '--author', 'human', '--message', 'From Gandalf: keep it short.']).out);
+  check('Gandalf\'s words are recorded and answered first', /Gandalf/.test(cap.next));
   const brief = cov(['watch-brief', '--thread', dir]).out;
-  check('the Watch brief carries goal, stances and the Captain', brief.includes('Prove the gates.') && brief.includes('hold') && brief.includes('Captain'));
+  check('Háma brief carries goal, stances and Gandalf', brief.includes('Prove the gates.') && brief.includes('hold') && brief.includes('Gandalf'));
 
-  writeFileSync(join(dir, 'gpt-2.md'), 'On the Chief: agree.\n\nSTANCE: agree\nCONFIDENCE: high\n\nCOVENANT CLOSE: gates hold.\n');
+  writeFileSync(join(dir, 'gpt-2.md'), 'On Théoden: agree.\n\nSTANCE: agree\nCONFIDENCE: high\n\nCOVENANT CLOSE: gates hold.\n');
   const close = json(cov(['record', '--thread', dir, '--author', 'gpt', '--message-file', join(dir, 'gpt-2.md')]).out);
-  check('the Navigator closes with a verdict', close.kind === 'closed-by-gpt' && close.verdict === 'gates hold.');
+  check('Gríma closes with a verdict', close.kind === 'closed-by-gpt' && close.verdict === 'gates hold.');
   const ledger = readFileSync(join(repo, 'docs', 'covenant', 'ledger.md'), 'utf8');
   check('the ledger has the line with the last stance', ledger.includes('gates hold.') && ledger.includes('agree (high)'));
   const log = git('log', '--oneline');
@@ -107,7 +107,7 @@ try {
   const bdir = b.dir;
   check('a build thread opens in the requirements phase on the codex lane', b.mode === 'build' && b.adapter === 'codex' && JSON.parse(readFileSync(join(bdir, 'thread.json'), 'utf8')).phase === 'requirements');
   const reqSend = cov(['outgoing', '--thread', bdir]).out;
-  check('the first build send asks for requirements', reqSend.includes('## Requirements') && reqSend.includes('build thread'));
+  check('the first build send asks for requirements', reqSend.includes('## Requirements') && reqSend.includes('build council'));
   writeFileSync(join(bdir, 'gpt-1.md'), 'R1: it must work.\nR2: it must be tested.\n\nSTANCE: hold\nCONFIDENCE: medium\n');
   cov(['record', '--thread', bdir, '--author', 'gpt', '--message-file', join(bdir, 'gpt-1.md')]);
   cov(['record', '--thread', bdir, '--author', 'watch', '--message', '{"verdict":"on-course","progress":"advancing","reason":"fine","nudge":null,"verdictLine":null,"safety":[]}']);
@@ -126,7 +126,7 @@ try {
   check('an agree verdict marks the plan agreed', JSON.parse(readFileSync(join(bdir, 'thread.json'), 'utf8')).plan.agreed === true);
   check('step start before signing is refused', !cov(['step', 'start', '--thread', bdir], { expectFail: true }).ok);
   const signed = json(cov(['plan', 'sign', '--thread', bdir]).out);
-  check('the Captain signs; execution begins', signed.steps === 2 && JSON.parse(readFileSync(join(bdir, 'thread.json'), 'utf8')).phase === 'execute');
+  check('Gandalf signs; execution begins', signed.steps === 2 && JSON.parse(readFileSync(join(bdir, 'thread.json'), 'utf8')).phase === 'execute');
   cov(['record', '--thread', bdir, '--author', 'watch', '--message', '{"verdict":"on-course","progress":"advancing","reason":"fine","nudge":null,"verdictLine":null,"safety":[]}']);
   check('step 2 cannot start before step 1 is agreed', !cov(['step', 'start', '2', '--thread', bdir], { expectFail: true }).ok);
   cov(['step', 'start', '--thread', bdir]);
