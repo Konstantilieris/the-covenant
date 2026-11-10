@@ -172,6 +172,42 @@ reports the thread closed (ledger line, commit on the current branch, push), giv
 Captain a short summary: the outcome, the Navigator's last stance, what stayed in
 dispute, and the transcript path `<dir>/transcript.md`.
 
+## Build mode (`--mode build`)
+
+A build thread ends in agreed, verified changes, not a verdict. It runs on the codex
+lane by default so the Navigator can open the files and run the tests itself. Phases:
+
+1. **Requirements.** `covenant open --mode build --title … --goal … --question "<what
+   must be true when it ships>"`, then `outgoing --clip` (the first send asks the
+   Navigator for its numbered requirements), wait, record, Watch.
+2. **Plan.** Write `<dir>/plan.md` in this shape and propose it:
+   ```
+   # Plan: <title>
+   ## Requirements
+   - R1: <text>
+   ## Steps
+   ### 1. <title>
+   files: <paths>
+   tests: <command or spec names>
+   done when: <observable outcome>
+   ```
+   `covenant plan propose --thread <dir> --file <dir>/plan.md`, then
+   `covenant outgoing --thread <dir> --plan --clip`, send, wait, record, Watch. The
+   Navigator's reply ends with a ```verdict block; `record` parses it. Objections →
+   edit the plan and propose again (a new version). `agree` → ask the Captain to sign:
+   `covenant plan sign --thread <dir>`. Nothing executes before that.
+3. **Execute, one step at a time.** `covenant step start --thread <dir>`; do the work
+   on the branch, run the step's tests, save the outputs to files (the diff, the test
+   output); `covenant step done --thread <dir> --evidence <f1,f2> --note "<claim>"`;
+   `covenant outgoing --thread <dir> --step --clip`, send, wait, record, Watch. `agree`
+   → next step. Objections → fix, `step done` again (twice at most, then the thread
+   pauses for the Captain).
+4. **Done.** When every step is agreed the phase is `done`: close with the verdict line
+   and give the Captain the summary: requirements, plan version, steps and evidence.
+
+In the codex lane each exchange is `covenant turn --thread <dir> --message-file <f>`
+with the text from `outgoing --plan` / `outgoing --step` saved to a file.
+
 ## Codex lane (`--lane codex`)
 
 Same thread, no browser: `covenant open … --adapter codex`, then per exchange

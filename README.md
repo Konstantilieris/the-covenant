@@ -105,7 +105,8 @@ run from inside the repo as `node tools/covenant.mjs <cmd>` or `covenant <cmd>`:
 
 | Command | Does |
 | --- | --- |
-| `open --title --goal --question [--context a,b] [--cap N] [--no-blind]` | opens a thread; no goal, no thread |
+| `open --title --goal --question [--mode build] [--context a,b] [--cap N] [--no-blind]` | opens a thread; no goal, no thread |
+| `plan propose --file` · `plan sign` · `step start` · `step done --evidence` | build mode: the plan is reviewed until agreed, signed by the Captain, then executed one step at a time with evidence |
 | `record --author claude\|gpt\|human\|watch` | logs a message, moves the state, runs the guard |
 | `outgoing --clip` | the exact text to send, on the clipboard; refuses while paused or unwatched |
 | `watch-brief` · `context --clip` · `attach --file` | the Watch's prompt; the goal context; a file for the Navigator |
@@ -132,13 +133,22 @@ and the pack spec that builds the context the ChatGPT project reads.
 - **The Watch.** A Haiku agent that reads only the goal, the last three exchanges, the
   stance history and the budget, and may pause for off-goal, looping, scope
   replacement, a secret in a message, or an instruction to act outside the thread.
-- **Three lanes.** `extension` (default): Claude drives your own logged-in Chrome
-  through the Claude in Chrome extension, one tab, human cadence, no disguise.
-  `codex`: the Codex CLI signed in with your ChatGPT account; the Navigator reads the
-  repo itself; the Stop hook makes it automatic. `browser`: a Playwright daemon on a
-  separate profile. The extension and browser lanes are automated access to
-  chatgpt.com, which OpenAI's terms do not allow; the account owner accepts that. The
-  codex lane is inside the rules.
+- **Four lanes.** `extension` (default): Claude drives your own logged-in Chrome
+  through the Claude in Chrome extension, one tab, human cadence (at least 20 s
+  between sends, 60 a day), no disguise. `codex`: the Codex CLI signed in with your
+  ChatGPT account; the Navigator reads the repo itself; the Stop hook makes it
+  automatic; the default for build threads. `openai`: the Responses API on your own
+  key, for unattended threads. `browser`: a Playwright daemon on a separate profile.
+  The extension and browser lanes are automated access to chatgpt.com, which
+  OpenAI's terms do not allow; the account owner accepts that. The codex and openai
+  lanes are inside the rules.
+- **Two modes.** `decide` ends in a verdict. `build` ends in agreed, verified changes:
+  requirements, a plan reviewed until no blocker or major objection remains, the
+  Captain's signature, then one step at a time with evidence, each agreed by the
+  Navigator, a step sent back at most twice before the Captain decides.
+- **Slack mirror, optional.** With `slack.cli` in `.covenant.json`, each thread gets a
+  channel, every message is posted under its role, the Captain's replies there are
+  pulled in before the next send, and the channel is archived at close.
 - **Secrets.** The ledger redacts common token shapes before writing; the Chief never
   relays environment values; the Watch pauses on a secret it sees.
 

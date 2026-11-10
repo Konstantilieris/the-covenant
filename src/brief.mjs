@@ -51,6 +51,22 @@ export function compileBrief(meta, { lean = false } = {}) {
   const parts = [];
   parts.push(`# The Covenant — thread "${meta.title}"`, '');
   if (meta.goal) parts.push('## Goal of this thread', '', meta.goal, '', 'The thread ends when this goal is met; say so with the close line when it is.', '');
+  if (meta.mode === 'build') {
+    parts.push(
+      '## This is a build thread',
+      '',
+      'Phases: **requirements** (you list what done must satisfy; the Chief answers) → **plan** (the Chief proposes numbered steps with files and tests; you review until no blocker or major objection remains; then the Captain signs) → **execute** (the Chief does one step at a time and sends the evidence: the diff, the test output, a claim; you check it against the plan, in the codex lane by opening the files and running the tests yourself) → **done**.',
+      '',
+      'Every plan review and every step review ends with a fenced verdict block, exactly this shape:',
+      '',
+      '```verdict',
+      '{"verdict":"agree","objections":[]}',
+      '```',
+      '',
+      'or `{"verdict":"objections","objections":[{"id":"S2-1","severity":"blocker|major|minor","claim":"…","evidence":"path:line or test name","change":"…"}]}`. `agree` only when no blocker or major remains; a step is sent back at most twice, then the Captain decides.',
+      '',
+    );
+  }
   if (lean) {
     parts.push('## How this works', '', `This is a Covenant thread: a dialogue with the Chief (Claude Code) about the project in this ChatGPT project. Your project instructions apply. Turn cap: ${meta.cap} replies from you. End it when the goal is met with a final line \`${cfg.closeLine} <one-line verdict>\`; the Chief can do the same.`, '');
   } else {

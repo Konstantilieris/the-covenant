@@ -18,8 +18,11 @@ reading it back as markdown, pasting a long text as an attachment, adding projec
 sources by paste), the ChatGPT project creation and instructions, and the codex lane
 end to end through the Stop hook.
 
-**Not yet run:** a full voyage on a live question in the extension lane; the browser
-(Playwright) lane; the Slack mirror; the API lane; `build` mode.
+**Built and covered by `npm test`, not yet run with a live model:** `build` mode
+(requirements → plan with structured verdicts → the Captain's signature → ordered
+steps with kept evidence → done). **Built, unexercised:** the Slack mirror, the
+`openai` lane, the browser (Playwright) lane. **Not yet run:** a full voyage on a live
+question in the extension lane.
 
 **Lanes and terms.** The extension and browser lanes are automated access to
 chatgpt.com, which OpenAI's terms do not allow; the account owner carries that. The

@@ -23,7 +23,10 @@ export const LOCAL = join(HOME, 'config.json');
 for (const d of [HOME, SESSIONS]) if (!existsSync(d)) mkdirSync(d, { recursive: true });
 
 const defaults = {
-  adapter: 'extension', // extension | codex | browser
+  adapter: 'extension', // extension | codex | browser | openai
+  buildAdapter: 'codex', // build threads: the Navigator reviews execution with the repo in front of it
+  buildCap: 20,
+  openai: { model: 'gpt-5.1', reasoning: 'medium', baseUrl: 'https://api.openai.com/v1' },
   dataDir: 'docs/covenant',
   cap: 8,
   minMessageChars: 20,

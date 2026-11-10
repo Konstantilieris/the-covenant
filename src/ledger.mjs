@@ -21,7 +21,7 @@ export function slugify(title) {
 const SECRET = /\b(sk-[A-Za-z0-9_-]{8,}|xox[baprs]-[A-Za-z0-9-]{8,}|ghp_[A-Za-z0-9]{8,}|github_pat_[A-Za-z0-9_]{8,}|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,})\b/g;
 export const redact = (text) => String(text ?? '').replace(SECRET, '[redacted]');
 
-export function createThread({ project, title, adapter, cap, question, goal, contextPaths, cwd, model, blind = false }) {
+export function createThread({ project, title, adapter, cap, question, goal, contextPaths, cwd, model, blind = false, mode = 'decide' }) {
   const date = nowIso().slice(0, 10);
   const slug = slugify(title);
   mkdirSync(project.threadsDir, { recursive: true });
@@ -38,6 +38,12 @@ export function createThread({ project, title, adapter, cap, question, goal, con
     model: model || null,
     cap,
     goal: goal || null,
+    mode, // decide: ends in a verdict · build: requirements → plan → execute → done
+    phase: mode === 'build' ? 'requirements' : null,
+    requirements: [],
+    plan: null,
+    lastVerdict: null,
+    slack: null,
     blind,
     sent: 0,
     captainMessages: 0,
@@ -100,7 +106,9 @@ export function render(dir) {
     `- State: ${meta.state}${meta.pausedReason ? ` — ${meta.pausedReason}` : ''}`,
     `- Adapter: ${meta.adapter}${meta.model ? ` · model ${meta.model}` : ''} · GPT turns ${meta.gptTurns}/${meta.cap}${meta.blind ? ' · blind first take' : ''}${meta.lastStance ? ` · GPT's last stance: ${meta.lastStance}` : ''}`,
     meta.goal ? `- Goal: ${meta.goal}` : null,
+    meta.mode === 'build' ? `- Build: phase ${meta.phase}${meta.plan ? ` · plan v${meta.plan.version}${meta.plan.signedAt ? ` signed by ${meta.plan.signedBy}` : meta.plan.agreed ? ' agreed, unsigned' : ' under review'} · steps ${meta.plan.steps.filter((s) => s.status === 'agreed').length}/${meta.plan.steps.length} agreed` : ''}` : null,
     meta.watch ? `- Watch: ${meta.watch.verdict} after GPT turn ${meta.watch.afterGptTurn} — ${meta.watch.reason}` : null,
+    meta.slack?.name ? `- Slack: #${meta.slack.name}` : null,
     meta.chat?.url ? `- Chat: ${meta.chat.url}` : meta.chat?.threadId ? `- Codex thread: ${meta.chat.threadId}` : null,
     meta.verdict ? `- Verdict: ${meta.verdict}` : null,
     '',

@@ -26,6 +26,10 @@ afterwards and decides. You are the second mind, not the second vote.
    CONFIDENCE: low | medium | high
 8. Close when the thread's goal is met, with a final line: COVENANT CLOSE: <one-line
    verdict>. The Chief can close too. The brief states the turn cap.
+9. In a build thread (the brief says so), every plan review and step review ends with
+   a fenced verdict block: ```verdict {"verdict":"agree|objections","objections":[…]}```.
+   Agree only when no blocker or major objection remains; check the evidence, and in
+   the codex lane open the files and run the tests yourself.
 
 <!-- This file + owner.md = the ChatGPT project's instructions
      (`covenant instructions --clip`). Re-paste into the project after editing. -->

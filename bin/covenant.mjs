@@ -9,7 +9,11 @@
 //   covenant wire [--browser tools|server]                   launcher, skills, agent, rules, hook → <repo>/.claude
 //   covenant doctor [--no-clipboard]                         what this machine and repo have and lack
 //   covenant open --title T --goal G [--question Q | --question-file F] [--context a,b] [--cap N]
-//                 [--adapter extension|codex|browser] [--session ID] [--no-blind]
+//                 [--mode decide|build] [--adapter extension|codex|browser|openai] [--session ID] [--no-blind]
+//   covenant plan propose --file plan.md | plan sign [--by NAME] | plan review-text      build mode
+//   covenant step start [n] | step done [n] --evidence a,b [--note "…"] | step review-text [n]
+//   covenant outgoing --plan | --step [n]                    the review message for the plan / a step
+//   covenant slack-pull [--thread DIR]                       the Captain's Slack replies → recorded
 //   covenant record --author claude|gpt|human|watch (--message-file F | --message M | --from-clipboard)
 //                   [--thread DIR] [--chat-url U]           log a message, move the state, run the guard
 //   covenant outgoing [--message-file F] [--thread DIR] [--clip] [--full] the exact text to send
@@ -47,6 +51,8 @@ import { install, plannedRules, uninstall } from '../src/install.mjs';
 import { wire } from '../src/wire.mjs';
 import { setup } from '../src/setup.mjs';
 import { pace, paceStatus } from '../src/pace.mjs';
+import { buildStatus, finishStep, planReviewText, proposePlan, signPlan, startStep, stepReviewText } from '../src/build.mjs';
+import { slackOpen, slackPull } from '../src/slack.mjs';
 import { appendEvent, createThread, listThreads, loadThread, render, resolveThreadDir, saveThread } from '../src/ledger.mjs';
 import { buildPack } from '../src/pack.mjs';
 import { bindings, clearPending, pendingInfo, writePending } from '../src/state.mjs';
@@ -125,20 +131,51 @@ const commands = {
     const goal = flags.goal && flags.goal !== true ? String(flags.goal) : die('--goal is required: the decision to reach and what counts as done');
     const question = flags['question-file'] ? readFileSync(flags['question-file'], 'utf8').trim() : flags.question || title;
     const contextPaths = flags.context ? String(flags.context).split(',').map((s) => s.trim()).filter(Boolean) : [];
+    const mode = flags.mode === 'build' ? 'build' : 'decide';
     const { dir, meta } = createThread({
       project: p,
       title,
       goal,
-      adapter: flags.adapter || p.cfg.adapter,
-      cap: Number(flags.cap || p.cfg.cap),
+      mode,
+      adapter: flags.adapter || (mode === 'build' ? p.cfg.buildAdapter : p.cfg.adapter),
+      cap: Number(flags.cap || (mode === 'build' ? p.cfg.buildCap : p.cfg.cap)),
       question,
       contextPaths,
       cwd,
       model: flags.model || null,
-      blind: flags['no-blind'] ? false : flags.blind === true || p.cfg.blindFirstTake !== false,
+      blind: mode === 'build' ? false : flags['no-blind'] ? false : flags.blind === true || p.cfg.blindFirstTake !== false,
     });
     const binding = meta.adapter === 'extension' ? { bound: 'extension lane: no hook binding' } : writePending(dir, cwd, flags.session && flags.session !== 'true' ? flags.session : null);
-    out({ dir, id: meta.id, project: p.name, repo: p.repoRoot, adapter: meta.adapter, cap: meta.cap, blind: meta.blind, goal: meta.goal, projectUrl: p.cfg.browser.projectUrl || null, ...binding });
+    let slack = null;
+    try {
+      slack = slackOpen(dir);
+    } catch {}
+    out({ dir, id: meta.id, project: p.name, repo: p.repoRoot, mode, adapter: meta.adapter, cap: meta.cap, blind: meta.blind, goal: meta.goal, projectUrl: p.cfg.browser.projectUrl || null, slack, ...binding });
+  },
+  // ---- build mode -----------------------------------------------------------
+  async plan() {
+    const sub = pos[1];
+    const dir = thread();
+    if (sub === 'propose') out(proposePlan(dir, flags.file || die('--file <plan.md> is required')));
+    else if (sub === 'sign') out(signPlan(dir, flags.by && flags.by !== true ? String(flags.by) : 'the Captain'));
+    else if (sub === 'review-text') out(planReviewText(dir));
+    else die('plan propose --file F | plan sign | plan review-text');
+  },
+  async step() {
+    const sub = pos[1];
+    const dir = thread();
+    const n = flags.n && flags.n !== true ? Number(flags.n) : pos[2] ? Number(pos[2]) : undefined;
+    if (sub === 'start') out(startStep(dir, n));
+    else if (sub === 'done') out(finishStep(dir, n, flags.evidence ? String(flags.evidence).split(',').map((s) => s.trim()).filter(Boolean) : [], flags.note && flags.note !== true ? String(flags.note) : ''));
+    else if (sub === 'review-text') out(stepReviewText(dir, n));
+    else die('step start [n] | step done [n] --evidence a,b [--note "…"] | step review-text [n]');
+  },
+  // The Captain's words from the Slack channel, if the mirror is on.
+  async 'slack-pull'() {
+    const dir = thread();
+    const fresh = slackPull(dir);
+    for (const m of fresh) await recordOnly({ dir, author: 'human', text: `${m.text}\n\n(— ${m.user}, from Slack)` });
+    out({ recorded: fresh.length, messages: fresh.map((m) => `${m.user}: ${m.text.slice(0, 120)}`) });
   },
   async record() {
     const dir = thread();
@@ -160,11 +197,15 @@ const commands = {
     const cfg = resolveProject(meta.repoRoot).cfg;
     const gate = sendGate(meta, cfg);
     if (gate) die(`cannot send — ${gate}`);
-    const questionOnly = meta.blind && meta.gptTurns === 0;
-    const text = readMessageArg(flags) ?? (questionOnly ? '' : die('--message or --message-file is required'));
+    const questionOnly = (meta.blind || meta.mode === 'build') && meta.gptTurns === 0;
+    let text = readMessageArg(flags);
+    if (meta.mode === 'build' && flags.plan) text = planReviewText(dir);
+    if (meta.mode === 'build' && flags.step) text = stepReviewText(dir, flags.step === true ? undefined : Number(flags.step));
+    if (text == null && !questionOnly) die('--message, --message-file, --plan or --step <n> is required');
+    text = text ?? '';
     const lean = flags.full ? false : flags.lean ? true : !!cfg.browser.projectUrl;
     const t = outgoingText({ dir, text, lean });
-    const what = questionOnly ? 'the question alone (blind first take)' : meta.blind && meta.gptTurns === 1 ? "the Chief's position" : `Chief turn ${meta.claudeTurns}`;
+    const what = meta.mode === 'build' ? (meta.gptTurns === 0 ? 'the brief and the requirements question' : flags.plan ? `plan v${meta.plan?.version} for review` : flags.step ? `step ${flags.step === true ? 'current' : flags.step} for review` : `Chief turn ${meta.claudeTurns}`) : questionOnly ? 'the question alone (blind first take)' : meta.blind && meta.gptTurns === 1 ? "the Chief's position" : `Chief turn ${meta.claudeTurns}`;
     if (flags.clip) {
       const paced = pace(cfg); // human cadence: a short wait is served here, a daily cap refuses
       setClipboard(t);
@@ -294,7 +335,7 @@ const commands = {
       pace: paceStatus(p.cfg),
       openThreads: listThreads(p.threadsDir)
         .filter((t) => t.meta.state !== 'closed')
-        .map((t) => ({ id: t.meta.id, dir: t.dir, adapter: t.meta.adapter, state: t.meta.state, gptTurns: t.meta.gptTurns, cap: t.meta.cap, sent: t.meta.sent || 0, goal: t.meta.goal, chat: t.meta.chat?.url || null, pausedReason: t.meta.pausedReason, watch: t.meta.watch?.verdict || null })),
+        .map((t) => ({ id: t.meta.id, dir: t.dir, mode: t.meta.mode, adapter: t.meta.adapter, state: t.meta.state, gptTurns: t.meta.gptTurns, cap: t.meta.cap, sent: t.meta.sent || 0, goal: t.meta.goal, chat: t.meta.chat?.url || null, pausedReason: t.meta.pausedReason, watch: t.meta.watch?.verdict || null, build: buildStatus(t.meta) })),
     });
   },
   async threads() {

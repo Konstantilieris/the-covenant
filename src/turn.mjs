@@ -9,10 +9,13 @@ import { gitBranch, nowIso, projectOf } from './config.mjs';
 import { compileBrief } from './brief.mjs';
 import { appendEvent, loadThread, readEvents, render, saveThread } from './ledger.mjs';
 import { unbindThread } from './state.mjs';
+import { applyVerdict, buildSendGate } from './build.mjs';
+import { slackClose, slackPost } from './slack.mjs';
 
 const adapters = {
   browser: () => import('./adapters/browser.mjs'),
   codex: () => import('./adapters/codex.mjs'),
+  openai: () => import('./adapters/openai.mjs'),
 };
 
 const cfgFor = (meta) => projectOf(meta).cfg;
@@ -109,7 +112,7 @@ export function sendGate(meta, cfg = cfgFor(meta)) {
   if (cfg.watch?.required !== false && meta.gptTurns > 0 && (!meta.watch || meta.watch.afterGptTurn < meta.gptTurns)) {
     return `the Watch has not reviewed Navigator turn ${meta.gptTurns}: run \`covenant watch-brief\` → covenant-watch agent → \`covenant record --author watch\` first`;
   }
-  return null;
+  return buildSendGate(meta);
 }
 
 export async function recordOnly({ dir, author, text, chatUrl }) {
@@ -127,9 +130,14 @@ export async function recordOnly({ dir, author, text, chatUrl }) {
   if (author === 'gpt') {
     meta.gptTurns++;
     noteStance(meta, footer);
+    if (meta.mode === 'build') applyVerdict(dir, meta, t); // plan agreed / step agreed / rework / blocked
   }
   if (author === 'human') meta.captainMessages = (meta.captainMessages || 0) + 1;
   if (chatUrl) meta.chat = { ...meta.chat, url: chatUrl };
+  saveThread(dir, meta);
+  try {
+    slackPost(dir, author, t);
+  } catch {}
 
   // The guard: needs no model.
   const flags = {};
@@ -216,13 +224,18 @@ export function watchBrief(dir, { exchanges = 3, maxChars = 3000 } = {}) {
 
 // Blind first take: the first send carries the question alone, the Navigator answers
 // unanchored, and the Chief's position (written and recorded before that answer)
-// goes in the second send.
+// goes in the second send. In build mode the first send is the brief plus the
+// requirements question; the plan and the step reviews travel as `text`.
 export function outgoingText({ dir, text, lean }) {
   const meta = loadThread(dir);
   const t = String(text || '').trim();
   if (meta.gptTurns === 0) {
     const brief = compileBrief(meta, { lean });
     writeFileSync(join(dir, 'brief.md'), brief);
+    if (meta.mode === 'build') {
+      appendEvent(dir, { author: 'system', text: 'sent to the Navigator: the brief and the build goal (requirements phase)' });
+      return `${brief}\n\n---\n\n## Requirements\n\n${t || meta.question}\n\nList the acceptance requirements you would hold this build to, numbered R1…; the Chief will answer with its plan. End with the stance footer.`;
+    }
     if (meta.blind) {
       appendEvent(dir, { author: 'system', text: 'sent to the Navigator: the question alone (blind first take)' });
       return `${brief}\n\n---\n\n## The question\n\n${meta.question}\n\nAnswer it yourself first, in full, under "My take". The Chief's position follows in the next message; do not wait for it.`;
@@ -249,6 +262,9 @@ export async function closeThread(dir, { by, verdict }) {
   appendEvent(dir, { author: 'system', text: `closed by ${by}: ${meta.verdict || ''}` });
   render(dir);
   unbindThread(dir);
+  try {
+    slackClose(dir);
+  } catch {}
 
   const ledger = join(project.dataDir, 'ledger.md');
   const rel = relative(project.repoRoot, dir).replace(/\\/g, '/');

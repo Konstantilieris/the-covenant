@@ -1,5 +1,13 @@
 # Roadmap
 
+Status on 2026-11-10: Prove-it items 4–5 and the whole of Trust are built (license,
+`npm test`, CI on Node 22/24 × Ubuntu/Windows, changelog, contributing, issue
+template, social preview image, badges). In Depth, `build` mode, pacing, the Slack
+mirror and the API lane are built; `build` mode is covered by `npm test`, the other
+three await a live run. Open: the install on a real repo and the first voyage (the
+Captain's hand), npm publish, the awesome-list pull request, the announcement, the
+history import.
+
 What makes the Covenant trustworthy first, then findable, then deeper. Each item
 says what done looks like. Phases are ordered by dependency: nothing in Reach ships
 before Trust is done, because every visitor a listing brings lands on the README

@@ -89,10 +89,11 @@ export function doctor({ cwd = process.cwd(), clipboard = true } = {}) {
     add('lane', ['extension', 'codex', 'browser'].includes(lane), `${lane}`, 'set adapter in .covenant.json or covenant config --set projects.<name>.adapter=…');
     if (lane === 'extension') add('project URL', !!project.cfg.browser?.projectUrl, project.cfg.browser?.projectUrl || 'not set for this machine', 'run: covenant project --url <ChatGPT project URL>');
     if (lane === 'extension') checks.push({ name: 'extension + ChatGPT login', ok: true, detail: 'checked by the skill from inside Claude Code (tabs_context_mcp, chatgpt.com)' });
-    if (lane === 'codex') {
+    if (lane === 'codex' || project.cfg.buildAdapter === 'codex') {
       const v = sh('codex', ['--version']);
-      add('codex cli', !!v, v || 'codex not found', 'npm i -g @openai/codex && codex login');
+      add('codex cli (codex lane; build threads)', !!v, v || 'codex not found', 'npm i -g @openai/codex && codex login');
     }
+    if (lane === 'openai') add('openai key (api lane)', !!(process.env.OPENAI_API_KEY || local.openai?.apiKey), process.env.OPENAI_API_KEY ? 'OPENAI_API_KEY set' : local.openai?.apiKey ? 'in ~/.covenant/config.json' : 'absent', 'set OPENAI_API_KEY or covenant config --set openai.apiKey=…');
     const branch = gitBranch(project.repoRoot);
     add('branch', !!branch && !['main', 'master'].includes(branch), `on ${branch}`, 'threads commit to the current branch; never main — switch branch');
     const threads = listThreads(project.threadsDir);
