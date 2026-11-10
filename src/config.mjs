@@ -76,6 +76,17 @@ export function gitRoot(cwd) {
   }
 }
 
+// "owner/name" from the origin remote (GitHub https or ssh), or null.
+export function repoSlug(repoRoot) {
+  try {
+    const url = execFileSync('git', ['-C', repoRoot, 'remote', 'get-url', 'origin'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    const m = url.match(/[:/]([^/:]+\/[^/]+?)(?:\.git)?\/?$/);
+    return m ? m[1] : null;
+  } catch {
+    return null;
+  }
+}
+
 export function gitBranch(repoRoot) {
   try {
     return execFileSync('git', ['-C', repoRoot, 'rev-parse', '--abbrev-ref', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();

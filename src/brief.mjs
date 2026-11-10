@@ -5,7 +5,7 @@
 // its instructions and files, so only what changes per thread is sent.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { claudeMemoryIndexFor, projectOf } from './config.mjs';
+import { claudeMemoryIndexFor, projectOf, repoSlug } from './config.mjs';
 
 // HTML comments in the project files are notes to the owner, not to the Navigator.
 const readOr = (p, fallback = '') => (existsSync(p) ? readFileSync(p, 'utf8').replace(/<!--[\s\S]*?-->/g, '').trim() : fallback);
@@ -68,7 +68,8 @@ export function compileBrief(meta, { lean = false } = {}) {
     );
   }
   if (lean) {
-    parts.push('## How this works', '', `This is a Covenant council: a dialogue with Théoden (Claude Code) about the project in this ChatGPT project. Your project instructions apply. Turn cap: ${meta.cap} replies from you. End it when the goal is met with a final line \`${cfg.closeLine} <one-line verdict>\`; the king can do the same.`, '');
+    const slug = repoSlug(project.repoRoot);
+    parts.push('## How this works', '', `This is a Covenant council: a dialogue with Théoden (Claude Code) about the project in this ChatGPT project. Your project instructions apply.${slug ? ` If the GitHub connector is enabled, the repository is \`${slug}\`: read the pushed files and cite \`path:line\` before asking the king.` : ''} Turn cap: ${meta.cap} replies from you. End it when the goal is met with a final line \`${cfg.closeLine} <one-line verdict>\`; the king can do the same.`, '');
   } else {
     parts.push('## How this works', '', cut(readOr(join(p, 'persona.md'), defaultPersona(cfg)), B.persona), '');
     const owner = readOr(join(p, 'owner.md'));

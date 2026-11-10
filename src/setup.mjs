@@ -9,7 +9,7 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, relative, resolve } from 'node:path';
-import { TEMPLATE, findMarker, gitBranch, loadConfig, resolveProject, saveLocalConfig } from './config.mjs';
+import { TEMPLATE, findMarker, gitBranch, loadConfig, repoSlug, resolveProject, saveLocalConfig } from './config.mjs';
 import { doctor } from './doctor.mjs';
 import { buildPack } from './pack.mjs';
 import { wire } from './wire.mjs';
@@ -29,12 +29,19 @@ export function setup({ cwd = process.cwd(), project: name, dir, projectUrl, bro
   if (!found.marker) writeFileSync(found.path, JSON.stringify({ project: projectName, dir: dataRel }, null, 2) + '\n');
   mkdirSync(join(dataDir, 'threads'), { recursive: true });
   const created = [];
+  const slug = repoSlug(repoRoot) || basename(repoRoot);
   for (const f of readdirSync(TEMPLATE)) {
     if (f === 'launcher.mjs') continue;
     const dst = join(dataDir, f);
     if (existsSync(dst)) continue;
-    writeFileSync(dst, readFileSync(join(TEMPLATE, f), 'utf8').replaceAll('{{PROJECT}}', projectName));
+    writeFileSync(dst, readFileSync(join(TEMPLATE, f), 'utf8').replaceAll('{{PROJECT}}', projectName).replaceAll('{{REPO}}', slug));
     created.push(f);
+  }
+  // A persona edited by hand may still carry the placeholder; fill it (idempotent).
+  const personaPath = join(dataDir, 'persona.md');
+  if (existsSync(personaPath) && readFileSync(personaPath, 'utf8').includes('{{REPO}}')) {
+    writeFileSync(personaPath, readFileSync(personaPath, 'utf8').replaceAll('{{REPO}}', slug).replaceAll('{{PROJECT}}', projectName));
+    created.push('persona.md (repo name filled)');
   }
   if (!existsSync(join(dataDir, 'ledger.md'))) {
     writeFileSync(join(dataDir, 'ledger.md'), `# Covenant ledger — ${projectName}\n\nOne line per closed thread, oldest first.\n\n`);

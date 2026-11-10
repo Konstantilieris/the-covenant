@@ -43,7 +43,7 @@ import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { HOME, LOCAL, ROOT, TEMPLATE, findMarker, loadConfig, loadLocal, nowIso, resolveProject, saveLocalConfig } from '../src/config.mjs';
+import { HOME, LOCAL, ROOT, TEMPLATE, findMarker, loadConfig, loadLocal, nowIso, repoSlug, resolveProject, saveLocalConfig } from '../src/config.mjs';
 import { compileBrief } from '../src/brief.mjs';
 import { getClipboard, setClipboard } from '../src/clipboard.mjs';
 import { buildGoalContext } from '../src/context.mjs';
@@ -123,10 +123,12 @@ const commands = {
     if (!found.marker) writeFileSync(found.path, JSON.stringify({ project: name, dir }, null, 2) + '\n');
     mkdirSync(join(dataDir, 'threads'), { recursive: true });
     const created = [];
+    const slug = repoSlug(found.root) || name;
     for (const f of readdirSync(TEMPLATE)) {
+      if (f === 'launcher.mjs') continue;
       const dst = join(dataDir, f);
       if (existsSync(dst)) continue;
-      writeFileSync(dst, readFileSync(join(TEMPLATE, f), 'utf8').replaceAll('{{PROJECT}}', name));
+      writeFileSync(dst, readFileSync(join(TEMPLATE, f), 'utf8').replaceAll('{{PROJECT}}', name).replaceAll('{{REPO}}', slug));
       created.push(f);
     }
     if (!existsSync(join(dataDir, 'ledger.md'))) writeFileSync(join(dataDir, 'ledger.md'), `# Covenant ledger — ${name}\n\nOne line per closed thread, oldest first.\n\n`);
