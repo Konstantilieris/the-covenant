@@ -2,6 +2,7 @@
 // The browser-side checks (extension connected, ChatGPT logged in, project sources
 // present) can only be made from inside Claude Code; the setup skill does those.
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
@@ -93,6 +94,13 @@ export function doctor({ cwd = process.cwd(), clipboard = true } = {}) {
     const lane = project.cfg.adapter;
     add('lane', ['extension', 'codex', 'browser'].includes(lane), `${lane}`, 'set adapter in .covenant.json or covenant config --set projects.<name>.adapter=…');
     if (lane === 'extension') add('project URL', !!project.cfg.browser?.projectUrl, project.cfg.browser?.projectUrl || 'not set for this machine', 'run: covenant project --url <ChatGPT project URL>');
+    if (lane === 'extension' && project.cfg.browser?.projectUrl) {
+      const strip = (f) => (existsSync(join(project.dataDir, f)) ? readFileSync(join(project.dataDir, f), 'utf8').replace(/<!--[\s\S]*?-->/g, '').trim() : '');
+      const text = [strip('persona.md'), strip('owner.md') ? `## Who you are talking to\n\n${strip('owner.md')}` : ''].filter(Boolean).join('\n\n');
+      const hash = createHash('sha256').update(text).digest('hex').slice(0, 16);
+      const recorded = (local.projects || {})[project.name]?.instructionsHash || null;
+      add('project instructions in ChatGPT', recorded === hash, recorded === hash ? 'match persona.md + owner.md' : recorded ? 'persona.md or owner.md changed since the last paste' : 'never recorded as pasted', '/covenant-setup refreshes them (or: covenant instructions --clip, paste, covenant instructions --pasted)');
+    }
     if (lane === 'extension') checks.push({ name: 'extension + ChatGPT login', ok: true, detail: 'checked by the skill from inside Claude Code (tabs_context_mcp, chatgpt.com)' });
     if (lane === 'codex' || project.cfg.buildAdapter === 'codex') {
       const v = sh('codex', ['--version']);

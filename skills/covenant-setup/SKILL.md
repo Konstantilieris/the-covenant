@@ -74,14 +74,18 @@ the context pack bundles). If a teammate already filled them, leave them. Then
 ## 4. The ChatGPT project (extension lane)
 
 `node tools/covenant.mjs project` → if it already shows a `projectUrl`, or `--skip-project`
-was given, skip 1–3 and go to the Sources (4) with the existing project open in the tab.
-Otherwise, in the extension's tab, logged in as the human:
+was given, skip 1 and 3. Then check `node tools/covenant.mjs doctor`: if "project
+instructions in ChatGPT" is not OK, do step 2 on the existing project (the file on disk
+changed since the last paste). Then go to the Sources (4) with the project open in the
+tab. Otherwise, in the extension's tab, logged in as the human:
 
 1. Sidebar → "+" next to **Projects** → Create project: name `<repo> Covenant`, memory
    **Default** → Create.
 2. Project actions (⋯) → **Project settings** → Instructions:
-   `node tools/covenant.mjs instructions --clip`, click the field, `ctrl+v`, confirm the
-   length with `javascript_tool` (`document.querySelector('[role=dialog] textarea').value.length`), **Save**.
+   `node tools/covenant.mjs instructions --clip`, click the field, `ctrl+a`, `ctrl+v`,
+   confirm the length with `javascript_tool`
+   (`document.querySelector('[role=dialog] textarea').value.length`), **Save**, then
+   `node tools/covenant.mjs instructions --pasted` so `doctor` knows the project is current.
 3. `node tools/covenant.mjs project --url <the project URL, …/g/g-p-…/project>`.
 4. Sources: `node tools/covenant.mjs sources` lists the files. For each:
    `node tools/covenant.mjs clip --file <path>`; **Sources** tab → **Add sources** →

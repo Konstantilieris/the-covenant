@@ -39,6 +39,7 @@
 //   covenant uninstall                                       removes exactly what install added
 //
 // Every command accepts --cwd DIR (default: the current directory).
+import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -81,6 +82,17 @@ const die = (m) => {
 };
 const project = () => resolveProject(cwd);
 const thread = () => resolveThreadDir(flags.thread, cwd);
+
+export function instructionsText(p) {
+  const strip = (f) => (existsSync(join(p.dataDir, f)) ? readFileSync(join(p.dataDir, f), 'utf8').replace(/<!--[\s\S]*?-->/g, '').trim() : '');
+  const text = [strip('persona.md'), strip('owner.md') ? `## Who you are talking to\n\n${strip('owner.md')}` : ''].filter(Boolean).join('\n\n');
+  return { text, hash: createHash('sha256').update(text).digest('hex').slice(0, 16) };
+}
+// Stale = the text on disk differs from what was last recorded as pasted (or nothing was ever recorded).
+export function instructionsStale(p) {
+  const recorded = (loadLocal().projects || {})[p.name]?.instructionsHash || null;
+  return recorded !== instructionsText(p).hash;
+}
 
 function nextStep(r, cfg) {
   if (r.kind === 'watch') {
@@ -244,13 +256,19 @@ const commands = {
   async helper() {
     out(readFileSync(join(ROOT, 'skills', 'covenant', 'chatgpt-page.js'), 'utf8'));
   },
+  // The ChatGPT project's instructions = persona + owner. `--clip` copies them;
+  // `--pasted` records that the current text is now in the project, so `doctor`
+  // can tell when persona.md or owner.md changed after the last paste.
   async instructions() {
     const p = project();
-    const strip = (f) => (existsSync(join(p.dataDir, f)) ? readFileSync(join(p.dataDir, f), 'utf8').replace(/<!--[\s\S]*?-->/g, '').trim() : '');
-    const text = [strip('persona.md'), strip('owner.md') ? `## Who you are talking to\n\n${strip('owner.md')}` : ''].filter(Boolean).join('\n\n');
+    const { text, hash } = instructionsText(p);
+    if (flags.pasted) {
+      saveLocalConfig({ projects: { [p.name]: { instructionsHash: hash, instructionsPastedAt: nowIso() } } });
+      return out({ recorded: hash, chars: text.length });
+    }
     if (flags.clip) {
       setClipboard(text);
-      out({ clipboard: true, chars: text.length, limitHint: 5000 });
+      out({ clipboard: true, chars: text.length, hash, limitHint: 5000, stale: instructionsStale(p), next: 'paste into the ChatGPT project (Project settings → Instructions), then: covenant instructions --pasted' });
     } else {
       out(text);
       process.stderr.write(`\n[${text.length} chars; ChatGPT project instructions allow about 5000]\n`);
