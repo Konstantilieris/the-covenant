@@ -14,6 +14,10 @@
 
 *Two minds on the bridge. One captain. Every decision logged.*
 
+A Claude Code and ChatGPT integration: an AI pair-review loop in which two models
+argue a question about your codebase with evidence, watched by a third, and leave a
+record in your repo.
+
 ![node](https://img.shields.io/badge/node-%E2%89%A5%2022-1f2a37) ![claude code](https://img.shields.io/badge/Claude%20Code-chief-b8650f) ![chatgpt](https://img.shields.io/badge/ChatGPT-navigator-b8650f) ![status](https://img.shields.io/badge/status-v0.1-1f2a37)
 
 The Covenant puts Claude Code and your ChatGPT in the same conversation about your

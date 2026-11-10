@@ -1,12 +1,29 @@
 {
   "name": "the-covenant",
   "version": "0.1.0",
-  "description": "Claude Code <-> ChatGPT dialogue loop without copy-paste",
+  "description": "Claude Code and ChatGPT talk it through about your codebase; the Captain decides. An AI pair-review loop recorded in your repo.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "claude-code",
+    "claude",
+    "anthropic",
+    "chatgpt",
+    "openai",
+    "codex",
+    "ai-agents",
+    "multi-agent",
+    "agentic-ai",
+    "llm",
+    "ai-code-review",
+    "code-review",
+    "pair-programming",
+    "developer-tools",
+    "cli",
+    "automation"
+  ],
   "author": "",
   "license": "ISC",
   "type": "module",
@@ -17,5 +34,13 @@
   },
   "dependencies": {
     "playwright": "^1.65.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Konstantilieris/the-covenant.git"
+  },
+  "homepage": "https://github.com/Konstantilieris/the-covenant#readme",
+  "bugs": {
+    "url": "https://github.com/Konstantilieris/the-covenant/issues"
   }
 }
