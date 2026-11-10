@@ -1,0 +1,44 @@
+{
+  "adapter": "extension",
+  "dataDir": "docs/covenant",
+  "cap": 8,
+  "minMessageChars": 20,
+  "closeLine": "COVENANT CLOSE:",
+  "blindFirstTake": true,
+  "maxThreadHours": 6,
+  "watch": { "model": "haiku", "exchanges": 3, "required": true },
+  "pushAtClose": true,
+  "browser": {
+    "port": 4848,
+    "profileDir": ".chrome-profile",
+    "minSecondsBetweenSends": 20,
+    "dailySendCap": 60,
+    "replyTimeoutSeconds": 900
+  },
+  "codex": { "model": null, "effort": "medium" },
+  "briefBudgetChars": { "persona": 2000, "owner": 2000, "brief": 6000, "ledger": 4000, "history": 6000, "thread": 4000 },
+  "install": {
+    "allowBrowserTools": [
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__claude-in-chrome__tabs_create_mcp",
+      "mcp__claude-in-chrome__tabs_close_mcp",
+      "mcp__claude-in-chrome__navigate",
+      "mcp__claude-in-chrome__browser_batch",
+      "mcp__claude-in-chrome__javascript_tool",
+      "mcp__claude-in-chrome__computer",
+      "mcp__claude-in-chrome__find",
+      "mcp__claude-in-chrome__read_page",
+      "mcp__claude-in-chrome__get_page_text",
+      "mcp__claude-in-chrome__form_input"
+    ],
+    "allowBrowserServer": ["mcp__claude-in-chrome"],
+    "allowBash": [
+      "covenant:*",
+      "covenant-setup:*",
+      "node tools/covenant.mjs:*",
+      "node {{ROOT}}/bin/covenant.mjs:*",
+      "node {{ROOT_POSIX}}/bin/covenant.mjs:*",
+      "node \"{{ROOT}}/bin/covenant.mjs\":*"
+    ]
+  }
+}

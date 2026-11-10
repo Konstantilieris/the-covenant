@@ -1,0 +1,19 @@
+{
+  "bundles": [
+    {
+      "file": "01-brief-and-rules.md",
+      "title": "{{PROJECT}} — brief, agent instructions and ground rules",
+      "sources": [{ "project": "brief.md" }, { "file": "CLAUDE.md" }, { "file": "AGENTS.md" }, { "file": "README.md" }, { "dir": ".claude/rules", "match": "\\.md$" }]
+    },
+    {
+      "file": "02-decisions.md",
+      "title": "Architecture decisions (newest twelve)",
+      "sources": [{ "dir": "docs/architecture/decisions", "match": "\\.md$", "latest": 12 }, { "dir": "docs/adr", "match": "\\.md$", "latest": 12 }]
+    },
+    {
+      "file": "03-repo-map.md",
+      "title": "Repository map",
+      "sources": [{ "tree": { "depth": 3 } }]
+    }
+  ]
+}
