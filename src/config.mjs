@@ -15,7 +15,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-export const HOME = join(homedir(), '.covenant');
+// COVENANT_HOME lets tests (and a locked-down machine) keep state away from ~/.covenant.
+export const HOME = process.env.COVENANT_HOME || join(homedir(), '.covenant');
 export const SESSIONS = join(HOME, 'sessions');
 export const TEMPLATE = join(ROOT, 'template');
 export const LOCAL = join(HOME, 'config.json');
@@ -31,6 +32,7 @@ const defaults = {
   maxThreadHours: 6,
   watch: { model: 'haiku', exchanges: 3, required: true },
   pushAtClose: true, // pushes the codebase's current branch; never main/master
+  pace: { minSecondsBetweenSends: 20, dailySendCap: 60 }, // extension lane cadence (see src/pace.mjs)
   browser: { port: 4848, profileDir: '.chrome-profile', projectUrl: null, minSecondsBetweenSends: 20, dailySendCap: 60, replyTimeoutSeconds: 900 },
   codex: { model: null, effort: 'medium' },
   briefBudgetChars: { persona: 2000, owner: 2000, brief: 6000, ledger: 4000, history: 6000, thread: 4000 },

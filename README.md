@@ -18,7 +18,7 @@ A Claude Code and ChatGPT integration: an AI pair-review loop in which two model
 argue a question about your codebase with evidence, watched by a third, and leave a
 record in your repo.
 
-![node](https://img.shields.io/badge/node-%E2%89%A5%2022-1f2a37) ![claude code](https://img.shields.io/badge/Claude%20Code-chief-b8650f) ![chatgpt](https://img.shields.io/badge/ChatGPT-navigator-b8650f) ![status](https://img.shields.io/badge/status-v0.1-1f2a37)
+[![test](https://github.com/Konstantilieris/the-covenant/actions/workflows/test.yml/badge.svg)](https://github.com/Konstantilieris/the-covenant/actions/workflows/test.yml) ![node](https://img.shields.io/badge/node-%E2%89%A5%2022-1f2a37) ![claude code](https://img.shields.io/badge/Claude%20Code-chief-b8650f) ![chatgpt](https://img.shields.io/badge/ChatGPT-navigator-b8650f) [![license](https://img.shields.io/badge/license-MIT-1f2a37)](LICENSE)
 
 The Covenant puts Claude Code and your ChatGPT in the same conversation about your
 codebase and takes you out of the copy-paste loop. Claude is the Chief: it sets the
@@ -91,6 +91,12 @@ project through the extension. That URL is the only per-person setting.
 Requirements: Claude Code with the Agent tool, Node 22 or newer, git. Extension lane:
 the Claude in Chrome extension and a ChatGPT account (Plus or better, for projects)
 logged in in that Chrome. Codex lane: the Codex CLI signed in with ChatGPT.
+
+Crew without the extension take the codex lane: `covenant config --set
+projects.<name>.adapter=codex` on their machine, `codex login` once, and `/covenant`
+works the same, with the Navigator reading the repo itself and the Stop hook relaying
+automatically. `npm test` runs the whole bookkeeping in a throwaway repo, no browser,
+no model.
 
 ## Flight controls
 

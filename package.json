@@ -4,7 +4,7 @@
   "description": "Claude Code and ChatGPT talk it through about your codebase; the Captain decides. An AI pair-review loop recorded in your repo.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/smoke.mjs"
   },
   "keywords": [
     "claude-code",
@@ -25,7 +25,7 @@
     "automation"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "private": "true",
   "bin": {
@@ -42,5 +42,17 @@
   "homepage": "https://github.com/Konstantilieris/the-covenant#readme",
   "bugs": {
     "url": "https://github.com/Konstantilieris/the-covenant/issues"
-  }
+  },
+  "files": [
+    "bin",
+    "src",
+    "hooks",
+    "agents",
+    "skills",
+    "template",
+    "tools",
+    "covenant.config.json",
+    "README.md",
+    "LICENSE"
+  ]
 }

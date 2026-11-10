@@ -46,6 +46,7 @@ import { doctor } from '../src/doctor.mjs';
 import { install, plannedRules, uninstall } from '../src/install.mjs';
 import { wire } from '../src/wire.mjs';
 import { setup } from '../src/setup.mjs';
+import { pace, paceStatus } from '../src/pace.mjs';
 import { appendEvent, createThread, listThreads, loadThread, render, resolveThreadDir, saveThread } from '../src/ledger.mjs';
 import { buildPack } from '../src/pack.mjs';
 import { bindings, clearPending, pendingInfo, writePending } from '../src/state.mjs';
@@ -165,11 +166,12 @@ const commands = {
     const t = outgoingText({ dir, text, lean });
     const what = questionOnly ? 'the question alone (blind first take)' : meta.blind && meta.gptTurns === 1 ? "the Chief's position" : `Chief turn ${meta.claudeTurns}`;
     if (flags.clip) {
+      const paced = pace(cfg); // human cadence: a short wait is served here, a daily cap refuses
       setClipboard(t);
       const m = loadThread(dir);
       m.sent = (m.sent || 0) + 1;
       saveThread(dir, m);
-      out({ clipboard: true, chars: t.length, sends: what, sent: m.sent, firstSend: meta.gptTurns === 0, lean, openIn: meta.gptTurns === 0 ? cfg.browser.projectUrl || 'https://chatgpt.com/' : meta.chat?.url || null });
+      out({ clipboard: true, chars: t.length, sends: what, sent: m.sent, firstSend: meta.gptTurns === 0, lean, pace: paced, openIn: meta.gptTurns === 0 ? cfg.browser.projectUrl || 'https://chatgpt.com/' : meta.chat?.url || null });
     } else out(t);
   },
   async 'watch-brief'() {
@@ -289,6 +291,7 @@ const commands = {
       daemon,
       pending: pendingInfo(),
       bindings: bindings(),
+      pace: paceStatus(p.cfg),
       openThreads: listThreads(p.threadsDir)
         .filter((t) => t.meta.state !== 'closed')
         .map((t) => ({ id: t.meta.id, dir: t.dir, adapter: t.meta.adapter, state: t.meta.state, gptTurns: t.meta.gptTurns, cap: t.meta.cap, sent: t.meta.sent || 0, goal: t.meta.goal, chat: t.meta.chat?.url || null, pausedReason: t.meta.pausedReason, watch: t.meta.watch?.verdict || null })),
