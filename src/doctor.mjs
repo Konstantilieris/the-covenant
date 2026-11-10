@@ -4,15 +4,17 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import { HOME, LOCAL, ROOT, findMarker, gitBranch, loadLocal, resolveProject } from './config.mjs';
 import { listThreads } from './ledger.mjs';
 import { packInfo } from './pack.mjs';
 import { plannedRules } from './install.mjs';
 
+// A shell only for the .cmd shims on Windows (codex, powershell); git and node run direct.
 const sh = (cmd, args, opts = {}) => {
   try {
-    return execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 15000, shell: process.platform === 'win32', ...opts }).trim();
+    const shell = process.platform === 'win32' && ['codex', 'powershell', 'npm'].includes(cmd);
+    return execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 15000, shell, ...opts }).trim();
   } catch {
     return null;
   }
@@ -82,7 +84,10 @@ export function doctor({ cwd = process.cwd(), clipboard = true } = {}) {
     const spec = join(project.dataDir, 'pack.json');
     add('pack.json', existsSync(spec), existsSync(spec) ? spec : 'missing', 'run: covenant init');
     const built = packInfo(project);
-    const head = sh('git', ['-C', project.repoRoot, 'log', '-1', '--format=%cI']);
+    // "moved on" means a commit that touched something other than the Covenant's own
+    // files; the setup commit that follows a pack build must not count.
+    const dataRel = relative(project.repoRoot, project.dataDir).replace(/\\/g, '/');
+    const head = sh('git', ['-C', project.repoRoot, 'log', '-1', '--format=%cI', '--', '.', `:!${dataRel}`, ':!tools/covenant.mjs', ':!.claude', ':!.covenant.json', ':!.gitignore']);
     const stale = built && head && Date.parse(head) > Date.parse(built.at);
     add('pack built', !!built && !stale, built ? `${built.files.length} files, built ${built.at}${stale ? `, repo moved on at ${head}` : ''}` : 'never built', built ? 'run: covenant pack, then refresh the Sources' : 'run: covenant pack');
     const lane = project.cfg.adapter;
