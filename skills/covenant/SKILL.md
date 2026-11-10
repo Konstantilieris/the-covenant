@@ -34,10 +34,15 @@ extension's own tab in Gandalf's Chrome; never open extra windows or tabs.
 ## 1. The goal, the question, the context
 
 - File path → read it. `<ISSUE-KEY>` → fetch the issue. Free text → as is.
-- **Write the goal yourself, two sentences:** the decision this council must reach,
-  and what counts as done (for example: "Decide where the quiet-hours shift lives.
+- **The goal comes from Gandalf, never from an assumption.** If the request states a
+  goal (a "Goal:" line, or a clear "done when"), use it verbatim. If it does not, do
+  not guess: look at the question and the files you picked, write two or three
+  candidate goals in the two-sentence shape (the decision this council must reach,
+  and what counts as done; for example: "Decide where the quiet-hours shift lives.
   Done when we have one answer, the file it goes in, and the one reason it is not
-  the other place."). No goal, no council.
+  the other place."), put the one you recommend first, and ask Gandalf which one,
+  in plain words, before anything else happens. Wait for the answer. Only then
+  `covenant open`. No goal, no council.
 - Pick the 2–6 files that matter (`--context`). Gríma cannot read the repo:
   quote the decisive lines with `path:line` in your messages. The project already
   holds the context pack; do not paste it.
